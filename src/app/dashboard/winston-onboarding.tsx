@@ -104,16 +104,13 @@ export function WinstonOnboarding({ userName, userId }: Props) {
       ? `Create a character based on: "${desc}". ${ageContext} Include detailed appearance, personality, voice tone, and age.`
       : `Create a fun, TRULY UNIQUE bedtime story character. ${ageContext}
 
-IMPORTANT: Do NOT default to foxes, wolves, rabbits, bears, owls, or any other common woodland animal. Do NOT use names related to "moon", "luna", "star", or "sky". Be wildly creative. Here are examples of the KIND of variety I want (don't use these exactly, invent your own):
-- A sentient teapot who collects bedtime stories from the steam
-- A 9-year-old girl who can only whisper but her whispers move clouds
-- A friendly piece of toast named Gerald who lives in a kitchen drawer
-- A retired superhero goldfish in a tiny fishbowl
-- A dancing cactus who is terrified of hugs
-- A cloud who is afraid of heights
-- A pair of mismatched socks who go on adventures when the laundry is done
+IMPORTANT: Be creative and varied. Characters can be ANYTHING — humans, animals, objects, plants, weather, food, mythical creatures, or abstract concepts brought to life. Don't default to foxes or woodland animals every time. Rotate widely. Here are examples of the range I want:
+- A human child with a unique quirk or ability
+- A sentient teapot, a dancing cactus, a retired superhero goldfish
+- A cloud who is afraid of heights, a pair of mismatched socks on adventures
+- A fox, bear, or owl is fine too — just not every time
 
-Pick something nobody has seen before. Include detailed appearance, personality, voice tone, and specific age (or equivalent for non-human characters).`
+Pick something fresh and unexpected. Include detailed appearance, personality, voice tone, and specific age (or equivalent for non-human characters).`
     const data = await callWinston(prompt)
     if (data?.action) {
       const result = await execAction(data.action)
