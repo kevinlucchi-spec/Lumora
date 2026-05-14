@@ -95,17 +95,17 @@ export function NewCharacterForm() {
         <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wider">Character essence</h3>
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1.5">Personality</label>
-          <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder="e.g. Curious, brave, occasionally overconfident. Loves puzzles and helping friends." rows={2}
+          <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder="e.g. Curious, brave, occasionally overconfident. Loves puzzles and helping friends." rows={2} maxLength={500}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
         </div>
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1.5">Appearance</label>
-          <textarea value={appearance} onChange={(e) => setAppearance(e.target.value)} placeholder="e.g. A small silver fox with bright amber eyes and a bushy tail tipped with white." rows={2}
+          <textarea value={appearance} onChange={(e) => setAppearance(e.target.value)} placeholder="e.g. A small silver fox with bright amber eyes and a bushy tail tipped with white." rows={2} maxLength={500}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
         </div>
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1.5">Voice & tone</label>
-          <textarea value={voiceTone} onChange={(e) => setVoiceTone(e.target.value)} placeholder="e.g. Speaks in short, enthusiastic sentences. Uses nature metaphors. Never mean." rows={2}
+          <textarea value={voiceTone} onChange={(e) => setVoiceTone(e.target.value)} placeholder="e.g. Speaks in short, enthusiastic sentences. Uses nature metaphors. Never mean." rows={2} maxLength={300}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
         </div>
       </div>

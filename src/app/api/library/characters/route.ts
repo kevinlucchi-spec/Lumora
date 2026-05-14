@@ -8,10 +8,10 @@ const CreateCharacterSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(300).optional(),
   essence: z.object({
-    personality: z.string().optional(),
-    appearance: z.string().optional(),
-    voiceTone: z.string().optional(),
-    age: z.string().optional(),
+    personality: z.string().max(500).optional(),
+    appearance: z.string().max(500).optional(),
+    voiceTone: z.string().max(300).optional(),
+    age: z.string().max(100).optional(),
   }),
   visualProfile: z.object({
     physicalDescription: z.object({
