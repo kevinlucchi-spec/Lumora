@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { CharacterPortraitPanel } from "./portrait-panel"
 import { EditableEssence } from "./editable-essence"
+import { ShareButton } from "@/components/share-button"
 
 export default async function CharacterDetailPage({
   params,
@@ -53,10 +54,13 @@ export default async function CharacterDetailPage({
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
       <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-4xl">
-        <div className="flex items-center gap-2 text-sm text-white/40 mb-6">
-          <Link href="/library/characters" className="hover:text-white transition-colors">Characters</Link>
-          <span>/</span>
-          <span className="text-white/70">{character.name}</span>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2 text-sm text-white/40">
+            <Link href="/library/characters" className="hover:text-white transition-colors">Characters</Link>
+            <span>/</span>
+            <span className="text-white/70">{character.name}</span>
+          </div>
+          <ShareButton entityType="character" entityId={characterId} currentPolicy={character.sharePolicy ?? "PRIVATE"} />
         </div>
 
         {/* Essence + Portrait side by side */}

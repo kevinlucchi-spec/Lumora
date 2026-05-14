@@ -9,6 +9,7 @@ import { StoryActions } from "./story-actions"
 import { EditableTitle } from "./editable-title"
 import { NewElementsPrompt } from "./new-elements-prompt"
 import { ReadAloud } from "./read-aloud"
+import { ShareButton } from "@/components/share-button"
 
 export default async function StoryReaderPage({
   params,
@@ -110,8 +111,9 @@ export default async function StoryReaderPage({
 
         {/* Story header */}
         <div className="mb-10">
-          <div className="mb-4">
+          <div className="flex items-start justify-between gap-3 mb-4">
             <EditableTitle storyId={storyId} seriesId={seriesId} initialTitle={story.title} />
+            <ShareButton entityType="story" entityId={storyId} currentPolicy={story.sharePolicy ?? "PRIVATE"} />
           </div>
           <div className="flex flex-wrap gap-2 text-xs text-white/40">
             <span className="bg-white/5 border border-white/10 px-2.5 py-1 rounded-full">
