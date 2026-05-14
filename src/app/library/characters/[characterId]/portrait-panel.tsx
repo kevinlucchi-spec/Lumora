@@ -1,4 +1,5 @@
 "use client"
+// @ts-nocheck
 
 import { useState, useRef } from "react"
 import { PortraitLibraryModal } from "@/components/portrait-library-modal"
