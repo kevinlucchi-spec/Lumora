@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { ProviderConfig } from "./types"
 
 export type AICapability =

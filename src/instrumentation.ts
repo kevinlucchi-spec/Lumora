@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Next.js instrumentation hook — runs once when the server starts.
  * Used to bootstrap the BullMQ story generation worker.

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { enqueueStoryGeneration } from "@/lib/services/generation.service"

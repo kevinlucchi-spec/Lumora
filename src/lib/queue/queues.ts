@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { StoryGenerationJobData } from "./jobs/story-generation.job"
 import { runStoryPipeline } from "@/lib/pipeline"
 

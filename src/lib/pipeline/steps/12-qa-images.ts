@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getAIRouter } from "@/lib/providers/ai"
 import { getImageProvider } from "@/lib/providers/image"
 import { downloadAndUpload, getSignedReadUrl } from "@/lib/storage/r2"

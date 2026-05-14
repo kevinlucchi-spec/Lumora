@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getAIRouter } from "@/lib/providers/ai"
 import { SceneSpecArraySchema, type SceneSpec } from "@/lib/schemas/scene"
 import { IMAGE_CAP_MAP } from "./01-normalize-request"

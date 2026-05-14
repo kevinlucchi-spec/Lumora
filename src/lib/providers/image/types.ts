@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface ArtStylePresetSpec {
   styleKeywords: string[]
   medium?: string

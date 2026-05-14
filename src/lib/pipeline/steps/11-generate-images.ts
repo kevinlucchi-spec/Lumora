@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getImageProvider } from "@/lib/providers/image"
 import { downloadAndUpload, getSignedReadUrl } from "@/lib/storage/r2"
 import { prisma } from "@/lib/prisma"

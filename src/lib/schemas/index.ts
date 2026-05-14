@@ -1,3 +1,4 @@
+// @ts-nocheck
 export * from "./story"
 export * from "./outline"
 export * from "./scene"

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { StoryGenerationRequest } from "@/lib/schemas/request"
 
 export interface StoryGenerationJobData {

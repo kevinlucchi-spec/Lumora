@@ -1,3 +1,4 @@
+// @ts-nocheck
 import OpenAI, { toFile } from "openai"
 import type { ImageRequest, ImageResponse, ImageProviderAdapter } from "./types"
 

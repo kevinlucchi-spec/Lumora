@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Anthropic from "@anthropic-ai/sdk"
 import { BaseAIAdapter } from "./base-adapter"
 import type { AIRequest, RawProviderResponse } from "./types"

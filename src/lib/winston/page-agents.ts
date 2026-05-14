@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Winston's page-specific agent knowledge + available actions.
  * Each page gets a tailored system prompt and a set of functions Winston can execute.

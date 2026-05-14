@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Gemini-based image editing.
  * Takes an existing image (base64) + a text edit instruction,

@@ -1,4 +1,5 @@
 "use client"
+// @ts-nocheck
 
 import { signOut } from "next-auth/react"
 

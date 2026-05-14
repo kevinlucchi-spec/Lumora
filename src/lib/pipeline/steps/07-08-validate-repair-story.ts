@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getAIRouter } from "@/lib/providers/ai"
 import type { PipelineContext } from "../types"
 

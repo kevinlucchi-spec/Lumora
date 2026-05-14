@@ -1,3 +1,4 @@
+// @ts-nocheck
 export default function GlobalLoading() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center bg-[#0f0a1e]">

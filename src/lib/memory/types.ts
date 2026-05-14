@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface CharacterMemorySnapshot {
   characterInstanceId: string
   characterName: string

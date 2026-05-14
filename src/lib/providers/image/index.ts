@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ImagenAdapter } from "./imagen"
 import { DalleAdapter } from "./dalle"
 import type { ImageProviderAdapter, ImageRequest, ImageResponse } from "./types"

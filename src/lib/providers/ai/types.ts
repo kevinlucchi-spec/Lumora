@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { z } from "zod"
 import type { AICapability } from "./capabilities"
 

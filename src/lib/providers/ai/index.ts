@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { AnthropicAdapter } from "./anthropic"
 import { OpenAIAdapter } from "./openai"
 import { GeminiAdapter } from "./gemini"

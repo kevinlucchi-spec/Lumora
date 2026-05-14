@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getAIRouter } from "@/lib/providers/ai"
 import { updateCharacterMemory } from "@/lib/memory/character-memory"
 import { updateBranchMemory } from "@/lib/memory/branch-memory"

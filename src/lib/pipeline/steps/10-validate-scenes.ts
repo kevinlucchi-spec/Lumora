@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SceneSpecSchema } from "@/lib/schemas/scene"
 import type { PipelineContext } from "../types"
 

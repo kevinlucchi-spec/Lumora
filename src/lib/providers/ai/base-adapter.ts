@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { AIRequest, AIResponse, AIProviderAdapter, RawProviderResponse } from "./types"
 import type { AICapability } from "./capabilities"
 

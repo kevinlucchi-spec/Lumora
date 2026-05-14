@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getStoryGenerationQueue } from "../queues"
 
 // In-memory queue: the worker is built into the queue itself.

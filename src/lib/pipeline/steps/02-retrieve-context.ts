@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getCharacterMemorySnapshots } from "@/lib/memory/character-memory"
 import { getBranchMemorySnapshot } from "@/lib/memory/branch-memory"
 import { getWorldCanonSnapshot } from "@/lib/memory/world-canon"

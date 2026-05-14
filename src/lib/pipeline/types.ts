@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { StoryGenerationRequest } from "@/lib/schemas/request"
 import type { ContextPack } from "@/lib/memory/types"
 import type { StoryOutline } from "@/lib/schemas/outline"

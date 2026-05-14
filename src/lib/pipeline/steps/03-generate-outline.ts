@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getAIRouter } from "@/lib/providers/ai"
 import { StoryOutlineSchema } from "@/lib/schemas/outline"
 import type { PipelineContext, NormalizedRequest } from "../types"

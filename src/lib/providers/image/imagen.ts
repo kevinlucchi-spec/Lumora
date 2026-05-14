@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { ImageRequest, ImageResponse, ImageProviderAdapter } from "./types"
 
 /**

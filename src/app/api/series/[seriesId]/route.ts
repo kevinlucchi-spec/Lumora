@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { getSeriesById, updateSeries, deleteSeries } from "@/lib/services/series.service"

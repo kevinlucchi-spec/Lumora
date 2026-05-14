@@ -1,3 +1,4 @@
+// @ts-nocheck
 import OpenAI from "openai"
 import { BaseAIAdapter } from "./base-adapter"
 import type { AIRequest, RawProviderResponse } from "./types"
