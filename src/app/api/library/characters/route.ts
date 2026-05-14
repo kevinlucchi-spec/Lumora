@@ -33,6 +33,7 @@ const CreateCharacterSchema = z.object({
     artStyleNotes: z.string().optional(),
   }).optional(),
   tags: z.array(z.string()).default([]),
+  sharePolicy: z.enum(["PRIVATE", "UNLISTED", "PUBLIC_VIEW", "PUBLIC_REUSE"]).default("PRIVATE"),
 })
 
 export async function GET() {

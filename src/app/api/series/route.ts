@@ -7,6 +7,7 @@ import { z } from "zod"
 const CreateSeriesSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
+  sharePolicy: z.enum(["PRIVATE", "UNLISTED", "PUBLIC_VIEW", "PUBLIC_REUSE"]).default("PRIVATE"),
 })
 
 export async function GET() {

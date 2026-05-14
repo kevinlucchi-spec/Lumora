@@ -17,6 +17,7 @@ export function NewCharacterForm() {
   const [appearance, setAppearance] = useState("")
   const [voiceTone, setVoiceTone] = useState("")
   const [age, setAge] = useState("")
+  const [sharePolicy, setSharePolicy] = useState("PRIVATE")
   const [tags, setTags] = useState("")
 
   function getCurrentValues() {
@@ -47,6 +48,7 @@ export function NewCharacterForm() {
           description,
           essence: { personality, appearance, voiceTone, age },
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+          sharePolicy,
         }),
       })
       if (!res.ok) {
@@ -115,10 +117,23 @@ export function NewCharacterForm() {
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:border-indigo-500 transition-colors" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-white/80 mb-1.5">Privacy</label>
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5">
-            <span className="text-sm text-white/60">Private</span>
-            <span className="text-xs text-white/30 ml-auto">Only you can use this character</span>
+          <label className="block text-sm font-medium text-white/80 mb-1.5">Sharing</label>
+          <div className="grid grid-cols-1 gap-2">
+            {[
+              { value: "PRIVATE", label: "Private", desc: "Only you can see and use this" },
+              { value: "PUBLIC_VIEW", label: "Public", desc: "Visible to everyone on Discover" },
+              { value: "PUBLIC_REUSE", label: "Public + Reusable", desc: "Others can copy to their library" },
+            ].map((opt) => (
+              <button key={opt.value} type="button" onClick={() => setSharePolicy(opt.value)}
+                className={`text-left px-4 py-2.5 rounded-lg border text-sm transition-colors ${
+                  sharePolicy === opt.value
+                    ? "border-indigo-500 bg-indigo-500/10 text-white"
+                    : "border-white/10 bg-white/5 text-white/50 hover:border-white/20"
+                }`}>
+                <span className="font-medium">{opt.label}</span>
+                <span className="text-xs text-white/30 ml-2">{opt.desc}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>

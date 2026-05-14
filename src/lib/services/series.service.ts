@@ -10,7 +10,7 @@ export async function getSeriesForUser(userId: string) {
   })
 }
 
-export async function createSeries(userId: string, data: { name: string; description?: string }) {
+export async function createSeries(userId: string, data: { name: string; description?: string; sharePolicy?: string }) {
   return prisma.series.create({
     data: {
       ...data,

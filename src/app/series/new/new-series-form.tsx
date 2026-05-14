@@ -5,10 +5,17 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
+const SHARE_OPTIONS = [
+  { value: "PRIVATE", label: "Private", desc: "Only you can see this series" },
+  { value: "PUBLIC_VIEW", label: "Public", desc: "Visible to everyone on Discover" },
+  { value: "PUBLIC_REUSE", label: "Public + Reusable", desc: "Others can copy characters and worlds" },
+]
+
 export function NewSeriesForm() {
   const router = useRouter()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [sharePolicy, setSharePolicy] = useState("PRIVATE")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -21,7 +28,7 @@ export function NewSeriesForm() {
       const res = await fetch("/api/series", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({ name, description, sharePolicy }),
       })
 
       if (!res.ok) {
@@ -62,7 +69,7 @@ export function NewSeriesForm() {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="A brief description of this story universe…"
+            placeholder="A brief description of this story universe..."
             rows={3}
             maxLength={1000}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none"
@@ -70,12 +77,19 @@ export function NewSeriesForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-white/80 mb-1.5">
-            Privacy
-          </label>
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5">
-            <span className="text-sm text-white/60">🔒 Private</span>
-            <span className="text-xs text-white/30 ml-auto">Only you can see this series</span>
+          <label className="block text-sm font-medium text-white/80 mb-1.5">Sharing</label>
+          <div className="grid grid-cols-1 gap-2">
+            {SHARE_OPTIONS.map((opt) => (
+              <button key={opt.value} type="button" onClick={() => setSharePolicy(opt.value)}
+                className={`text-left px-4 py-2.5 rounded-lg border text-sm transition-colors ${
+                  sharePolicy === opt.value
+                    ? "border-indigo-500 bg-indigo-500/10 text-white"
+                    : "border-white/10 bg-white/5 text-white/50 hover:border-white/20"
+                }`}>
+                <span className="font-medium">{opt.label}</span>
+                <span className="text-xs text-white/30 ml-2">{opt.desc}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -92,7 +106,7 @@ export function NewSeriesForm() {
           disabled={loading || !name.trim()}
           className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
         >
-          {loading ? "Creating…" : "Create series"}
+          {loading ? "Creating..." : "Create series"}
         </button>
         <Link
           href="/series"
