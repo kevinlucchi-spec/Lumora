@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 
 interface Props {
   userName: string
+  userId: string
 }
 
 type Step = "welcome" | "age-band" | "character-input" | "character-creating" | "portrait-style" | "portrait-creating" | "world-input" | "world-creating" | "series-input" | "series-creating" | "all-done"
@@ -42,16 +43,26 @@ const ART_STYLES = [
   { value: "1950s golden age picture book, grainy lithograph texture, muted earth tones", label: "Vintage / Retro" },
 ]
 
-function load(): State {
+function load(userId: string): State {
   if (typeof window === "undefined") return { step: "welcome" }
-  try { const s = localStorage.getItem("lumora-onboarding"); return s ? JSON.parse(s) : { step: "welcome" } } catch { return { step: "welcome" } }
+  try {
+    const raw = localStorage.getItem("lumora-onboarding")
+    if (!raw) return { step: "welcome" }
+    const s = JSON.parse(raw)
+    // Clear if different user
+    if (s._userId && s._userId !== userId) {
+      localStorage.removeItem("lumora-onboarding")
+      return { step: "welcome" }
+    }
+    return s
+  } catch { return { step: "welcome" } }
 }
-function save(s: State) { try { localStorage.setItem("lumora-onboarding", JSON.stringify(s)) } catch {} }
+function save(s: State, userId: string) { try { localStorage.setItem("lumora-onboarding", JSON.stringify({ ...s, _userId: userId })) } catch {} }
 function clear() { try { localStorage.removeItem("lumora-onboarding") } catch {} }
 
-export function WinstonOnboarding({ userName }: Props) {
+export function WinstonOnboarding({ userName, userId }: Props) {
   const router = useRouter()
-  const [state, setState] = useState<State>(load)
+  const [state, setState] = useState<State>(() => load(userId))
   const [input, setInput] = useState("")
   const [selectedStyle, setSelectedStyle] = useState("")
   const [loading, setLoading] = useState(false)
@@ -73,7 +84,7 @@ export function WinstonOnboarding({ userName }: Props) {
   }
   const canGoBack = state.step !== "welcome" && !loading && !state.step.endsWith("-creating")
 
-  useEffect(() => { save(state) }, [state])
+  useEffect(() => { save(state, userId) }, [state, userId])
   function up(patch: Partial<State>) { setState((prev) => ({ ...prev, ...patch })) }
 
   async function callWinston(message: string) {
@@ -91,12 +102,33 @@ export function WinstonOnboarding({ userName }: Props) {
     const ageContext = state.ageBand ? `The target audience is ${state.ageBand} (${AGE_BANDS.find(a => a.value === state.ageBand)?.sub ?? ""}). Create a character appropriate for this age group.` : ""
     const prompt = desc
       ? `Create a character based on: "${desc}". ${ageContext} Include detailed appearance, personality, voice tone, and age.`
-      : `Create a fun, unique bedtime story character. ${ageContext} Creative and unexpected. Detailed appearance, personality, voice tone, specific age.`
+      : `Create a fun, TRULY UNIQUE bedtime story character. ${ageContext}
+
+IMPORTANT: Do NOT default to foxes, wolves, rabbits, bears, owls, or any other common woodland animal. Do NOT use names related to "moon", "luna", "star", or "sky". Be wildly creative. Here are examples of the KIND of variety I want (don't use these exactly, invent your own):
+- A sentient teapot who collects bedtime stories from the steam
+- A 9-year-old girl who can only whisper but her whispers move clouds
+- A friendly piece of toast named Gerald who lives in a kitchen drawer
+- A retired superhero goldfish in a tiny fishbowl
+- A dancing cactus who is terrified of hugs
+- A cloud who is afraid of heights
+- A pair of mismatched socks who go on adventures when the laundry is done
+
+Pick something nobody has seen before. Include detailed appearance, personality, voice tone, and specific age (or equivalent for non-human characters).`
     const data = await callWinston(prompt)
     if (data?.action) {
       const result = await execAction(data.action)
-      const idMatch = result?.navigate?.match(/\/characters\/([^/]+)/)
-      up({ step: "portrait-style", characterId: idMatch?.[1], characterName: data.action.params.name ?? "Your character" })
+      let charId = result?.navigate?.match(/\/characters\/([^/]+)/)?.[1]
+      // Fallback: if ID not captured from navigate, fetch the most recent character
+      if (!charId) {
+        try {
+          const res = await fetch("/api/library/characters")
+          if (res.ok) {
+            const chars = await res.json()
+            if (Array.isArray(chars) && chars.length > 0) charId = chars[0].id
+          }
+        } catch { /* ignore */ }
+      }
+      up({ step: "portrait-style", characterId: charId, characterName: data.action.params.name ?? "Your character" })
     } else {
       up({ step: "portrait-style", characterName: "Your character" })
     }

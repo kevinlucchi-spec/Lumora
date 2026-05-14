@@ -73,7 +73,7 @@ export default async function DashboardPage() {
           </div>
 
           {series.length === 0 ? (
-            <WinstonOnboarding userName={session.user?.name ?? "there"} />
+            <WinstonOnboarding userName={session.user?.name ?? "there"} userId={session.user.id} />
           ) : (
             <div className="space-y-3">
               {series.map((s) => {

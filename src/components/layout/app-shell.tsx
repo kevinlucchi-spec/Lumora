@@ -17,6 +17,7 @@ const NAV = [
   ]},
   { label: "Discover", href: "/discover", icon: "🔍" },
   { label: "Runs", href: "/runs", icon: "⚙" },
+  { label: "Help", href: "/help", icon: "?" },
   { label: "Settings", href: "/settings", icon: "◈" },
 ]
 
