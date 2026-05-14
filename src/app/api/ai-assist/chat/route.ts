@@ -147,19 +147,19 @@ async function getLiveContext(userId: string, pathname: string): Promise<string>
     ])
 
     parts.push("ALL CHARACTERS: " + (allChars.length === 0 ? "(none)" :
-      allChars.map((c) => `${c.name} (id: ${c.id}${c.portraitAssetId ? ", has portrait" : ""}${c.description ? `, "${c.description}"` : ""})`).join("; ")))
+      allChars.map((c: { id: string; name: string; description: string | null; portraitAssetId: string | null }) => `${c.name} (id: ${c.id}${c.portraitAssetId ? ", has portrait" : ""}${c.description ? `, "${c.description}"` : ""})`).join("; ")))
 
     parts.push("ALL SERIES: " + (allSeries.length === 0 ? "(none)" :
-      allSeries.map((s) => `${s.name} (id: ${s.id}${s.description ? `, "${s.description}"` : ""})`).join("; ")))
+      allSeries.map((s: { id: string; name: string; description: string | null }) => `${s.name} (id: ${s.id}${s.description ? `, "${s.description}"` : ""})`).join("; ")))
 
     if (allWorlds.length > 0)
-      parts.push("ALL WORLDS: " + allWorlds.map((w) => `${w.name} (id: ${w.id})`).join("; "))
+      parts.push("ALL WORLDS: " + allWorlds.map((w: { id: string; name: string }) => `${w.name} (id: ${w.id})`).join("; "))
 
     if (allArtStyles.length > 0)
-      parts.push("ALL ART STYLES: " + allArtStyles.map((a) => `${a.name}${a.medium ? ` (${a.medium})` : ""} (id: ${a.id})`).join("; "))
+      parts.push("ALL ART STYLES: " + allArtStyles.map((a: { id: string; name: string; medium: string | null }) => `${a.name}${a.medium ? ` (${a.medium})` : ""} (id: ${a.id})`).join("; "))
 
     if (allPromptSeeds.length > 0)
-      parts.push("ALL PROMPT SEEDS: " + allPromptSeeds.map((p) => `${p.name} (id: ${p.id})`).join("; "))
+      parts.push("ALL PROMPT SEEDS: " + allPromptSeeds.map((p: { id: string; name: string }) => `${p.name} (id: ${p.id})`).join("; "))
 
     // Load all stories across all series for search
     const allStories = await prisma.story.findMany({
