@@ -102,7 +102,7 @@ export function BulkActions({ characters }: Props) {
             }`}>
               {selected.has(c.id) && <span className="text-white text-xs">&#10003;</span>}
             </div>
-            <span className="text-sm truncate">{c.name}</span>
+            <span className="text-sm break-words">{c.name}</span>
           </button>
         ))}
       </div>

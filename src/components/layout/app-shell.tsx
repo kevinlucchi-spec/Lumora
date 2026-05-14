@@ -127,7 +127,7 @@ export function AppShell({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto min-h-0">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto min-h-0">
         <WinstonAssistant />
         {children}
       </main>

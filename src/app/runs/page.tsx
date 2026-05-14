@@ -72,7 +72,7 @@ export default async function RunsPage() {
                 <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${STATUS_COLOR[run.status] ?? "bg-white/10 text-white/50"}`}>
                   {run.status}
                 </span>
-                <span className="flex-1 text-sm text-white/70 group-hover:text-white transition-colors truncate">
+                <span className="flex-1 text-sm text-white/70 group-hover:text-white transition-colors break-words">
                   {run.story?.title ?? "Unnamed run"}
                 </span>
                 <span className="text-xs text-white/30 shrink-0">

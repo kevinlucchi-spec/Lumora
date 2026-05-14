@@ -60,11 +60,11 @@ export default async function SeriesPage() {
                     📖
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm mb-0.5 group-hover:text-indigo-300 transition-colors truncate">
+                    <div className="font-medium text-sm mb-0.5 group-hover:text-indigo-300 transition-colors break-words">
                       {s.name}
                     </div>
                     {s.description && (
-                      <p className="text-xs text-white/40 truncate">{s.description}</p>
+                      <p className="text-xs text-white/40 break-words">{s.description}</p>
                     )}
                     <p className="text-xs text-white/30 mt-0.5">
                       {branchCount} {branchCount === 1 ? "branch" : "branches"}

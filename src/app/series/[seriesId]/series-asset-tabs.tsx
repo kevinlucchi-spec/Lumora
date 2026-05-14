@@ -114,8 +114,8 @@ export function SeriesAssetTabs({ seriesId, branches, linked, global }: Props) {
                   className="flex items-center gap-3 bg-white/5 border border-white/10 hover:border-indigo-500/50 rounded-lg px-4 py-3 text-left transition-colors disabled:opacity-50 group">
                   <span className="text-base">{cfg.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white/70 group-hover:text-white truncate">{a.name}</p>
-                    {a.description && <p className="text-xs text-white/30 truncate">{a.description}</p>}
+                    <p className="text-sm text-white/70 group-hover:text-white break-words">{a.name}</p>
+                    {a.description && <p className="text-xs text-white/30 break-words">{a.description}</p>}
                   </div>
                   <span className="text-xs text-indigo-400 shrink-0">{busy === a.id ? "..." : "Add"}</span>
                 </button>
@@ -155,16 +155,16 @@ export function SeriesAssetTabs({ seriesId, branches, linked, global }: Props) {
                     <Link href={detailHref} className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
                       <span className="text-base">{cfg.emoji}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white/70 group-hover:text-white truncate">{a.name}</p>
-                        {a.description && <p className="text-xs text-white/30 truncate">{a.description}</p>}
+                        <p className="text-sm text-white/70 group-hover:text-white break-words">{a.name}</p>
+                        {a.description && <p className="text-xs text-white/30 break-words">{a.description}</p>}
                       </div>
                     </Link>
                   ) : (
                     <>
                       <span className="text-base">{cfg.emoji}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white/70 truncate">{a.name}</p>
-                        {a.description && <p className="text-xs text-white/30 truncate">{a.description}</p>}
+                        <p className="text-sm text-white/70 break-words">{a.name}</p>
+                        {a.description && <p className="text-xs text-white/30 break-words">{a.description}</p>}
                       </div>
                     </>
                   )}
@@ -252,7 +252,7 @@ export function SeriesAssetTabs({ seriesId, branches, linked, global }: Props) {
                               <Link key={s.id} href={`/series/${seriesId}/stories/${s.id}`}
                                 className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors group">
                                 <span className="text-indigo-400/50 text-xs">Part {i + 1}</span>
-                                <span className="text-sm text-white/70 group-hover:text-white transition-colors flex-1 truncate">{s.title}</span>
+                                <span className="text-sm text-white/70 group-hover:text-white transition-colors flex-1 break-words">{s.title}</span>
                                 <span className="text-white/20 group-hover:text-white/50 text-xs">Read &rarr;</span>
                               </Link>
                             ))}
@@ -264,7 +264,7 @@ export function SeriesAssetTabs({ seriesId, branches, linked, global }: Props) {
                         <Link key={s.id} href={`/series/${seriesId}/stories/${s.id}`}
                           className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors group">
                           <span className="text-white/20 text-xs">#{s.order}</span>
-                          <span className="text-sm text-white/70 group-hover:text-white transition-colors flex-1 truncate">{s.title}</span>
+                          <span className="text-sm text-white/70 group-hover:text-white transition-colors flex-1 break-words">{s.title}</span>
                           <span className="text-white/20 group-hover:text-white/50 text-xs">Read &rarr;</span>
                         </Link>
                       ))}

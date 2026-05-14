@@ -162,7 +162,7 @@ export function CharacterPortraitPanel({ characterId, initialPortraitUrl, initia
             className="w-full rounded-xl object-contain border border-white/10 max-h-[320px]" />
 
           {portraitName && (
-            <p className="text-xs text-white/50 text-center truncate">{portraitName}</p>
+            <p className="text-xs text-white/50 text-center break-words">{portraitName}</p>
           )}
 
           {/* Edit with AI panel */}

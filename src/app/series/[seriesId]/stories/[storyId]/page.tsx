@@ -105,7 +105,7 @@ export default async function StoryReaderPage({
             {story.volume.branch.series.name}
           </Link>
           <span>/</span>
-          <span className="text-white/70 truncate">{story.title}</span>
+          <span className="text-white/70 break-words">{story.title}</span>
         </div>
 
         {/* Story header */}
