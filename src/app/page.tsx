@@ -30,7 +30,7 @@ export default function LandingPage() {
       <main className="flex flex-col items-center justify-center text-center px-6 pt-28 pb-20">
         <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs px-3 py-1.5 rounded-full mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-          Private-first · Multi-AI · Continuity-aware
+          Where imagination becomes stories
         </div>
 
         <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-tight max-w-3xl mb-6">
@@ -79,9 +79,9 @@ export default function LandingPage() {
       {/* AI pipeline section */}
       <section className="border-t border-white/10 px-6 py-20">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold mb-3">Multi-AI orchestration</h2>
+          <h2 className="text-2xl font-semibold mb-3">How it works</h2>
           <p className="text-white/50 text-sm mb-10 max-w-lg mx-auto">
-            Each story is crafted by specialized AI models working in a validated pipeline.
+            Multiple AI models collaborate to write, illustrate, and validate every story.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {AI_ROLES.map((r) => (
@@ -101,7 +101,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 px-8 py-6 text-center text-xs text-white/30">
-        Lumora — private by default, shareable by choice
+        Lumora — bedtime stories, brought to life
       </footer>
     </div>
   );
