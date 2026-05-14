@@ -1,0 +1,248 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+
+interface Props {
+  userName: string
+}
+
+type Step = "welcome" | "character-input" | "character-creating" | "portrait-style" | "portrait-creating" | "world-input" | "world-creating" | "series-input" | "series-creating" | "all-done"
+
+interface State {
+  step: Step
+  characterId?: string
+  characterName?: string
+  artStyle?: string
+  portraitUrl?: string
+  worldId?: string
+  worldName?: string
+  seriesId?: string
+  seriesName?: string
+}
+
+const ART_STYLES = [
+  { value: "warm digital illustration, rounded forms, modern children's book style", label: "Modern Storybook" },
+  { value: "traditional watercolor on textured paper, visible brushstrokes, soft edges", label: "Watercolor" },
+  { value: "Japanese anime cel animation style, sharp outlines, large glossy eyes, Studio Ghibli feel", label: "Anime / Ghibli" },
+  { value: "photorealistic 3D render, ray-traced lighting, Pixar-quality rendering", label: "Photorealistic 3D" },
+  { value: "pencil and charcoal sketch on cream paper, crosshatching, hand-drawn feel", label: "Pencil Sketch" },
+  { value: "oil painting with thick brushstrokes, rich colors, warm golden light, classical storybook", label: "Oil Painting" },
+  { value: "kawaii chibi style, round proportions, oversized head, pastel candy colors", label: "Chibi / Kawaii" },
+  { value: "1950s golden age picture book, grainy lithograph texture, muted earth tones", label: "Vintage / Retro" },
+]
+
+function load(): State {
+  if (typeof window === "undefined") return { step: "welcome" }
+  try { const s = localStorage.getItem("lumora-onboarding"); return s ? JSON.parse(s) : { step: "welcome" } } catch { return { step: "welcome" } }
+}
+function save(s: State) { try { localStorage.setItem("lumora-onboarding", JSON.stringify(s)) } catch {} }
+function clear() { try { localStorage.removeItem("lumora-onboarding") } catch {} }
+
+export function WinstonOnboarding({ userName }: Props) {
+  const router = useRouter()
+  const [state, setState] = useState<State>(load)
+  const [input, setInput] = useState("")
+  const [selectedStyle, setSelectedStyle] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => { save(state) }, [state])
+  function up(patch: Partial<State>) { setState((prev) => ({ ...prev, ...patch })) }
+
+  async function callWinston(message: string) {
+    const res = await fetch("/api/ai-assist/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message, pathname: "/dashboard", history: [] }) })
+    return res.ok ? res.json() : null
+  }
+  async function execAction(action: { id: string; params: Record<string, string> }) {
+    const res = await fetch("/api/ai-assist/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirmAction: action }) })
+    return res.ok ? res.json() : null
+  }
+
+  async function createCharacter(userInput?: string) {
+    const desc = userInput ?? input.trim()
+    setLoading(true); up({ step: "character-creating" })
+    const prompt = desc
+      ? `Create a character based on: "${desc}". Include detailed appearance, personality, voice tone, and age.`
+      : "Create a fun, unique bedtime story character. Creative and unexpected. Detailed appearance, personality, voice tone, specific age."
+    const data = await callWinston(prompt)
+    if (data?.action) {
+      const result = await execAction(data.action)
+      const idMatch = result?.navigate?.match(/\/characters\/([^/]+)/)
+      up({ step: "portrait-style", characterId: idMatch?.[1], characterName: data.action.params.name ?? "Your character" })
+    } else {
+      up({ step: "portrait-style", characterName: "Your character" })
+    }
+    setLoading(false); setInput("")
+  }
+
+  async function generatePortrait() {
+    if (!state.characterId) { up({ step: "world-input" }); return }
+    setLoading(true); up({ step: "portrait-creating", artStyle: selectedStyle })
+    try {
+      const res = await fetch(`/api/library/characters/${state.characterId}/portrait`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ artStyle: selectedStyle || undefined }),
+      })
+      if (res.ok) { const d = await res.json(); up({ step: "world-input", portraitUrl: d.url }) }
+      else up({ step: "world-input" })
+    } catch { up({ step: "world-input" }) }
+    setLoading(false)
+  }
+
+  async function createWorld(userInput?: string) {
+    const desc = userInput ?? input.trim()
+    setLoading(true); up({ step: "world-creating" })
+    const worldName = desc || `${state.characterName}'s World`
+    const prompt = desc
+      ? `Create a world called "${desc}" suitable for bedtime stories. Include rules and tone guide.`
+      : `Create a cozy, magical world for ${state.characterName}'s bedtime stories. Pick a creative name, include rules and tone guide.`
+    const data = await callWinston(prompt)
+    if (data?.action) {
+      const result = await execAction(data.action)
+      up({ step: "series-input", worldId: result?.worldId, worldName: data.action.params.name ?? worldName })
+    } else {
+      up({ step: "series-input", worldName })
+    }
+    setLoading(false); setInput("")
+  }
+
+  async function createSeries(userInput?: string) {
+    const name = userInput ?? input.trim()
+    setLoading(true); up({ step: "series-creating" })
+    const finalName = name || `${state.characterName}'s Adventures`
+    const result = await execAction({ id: "create-series", params: { name: finalName } })
+    const sId = result?.navigate?.match(/\/series\/([^/]+)/)?.[1]
+    if (sId) {
+      if (state.characterId) {
+        await execAction({ id: "link-character", params: { seriesId: sId, characterId: state.characterId } })
+      }
+      if (state.worldId) {
+        await execAction({ id: "link-world", params: { seriesId: sId, worldId: state.worldId } })
+      }
+    }
+    up({ step: "all-done", seriesId: sId, seriesName: finalName })
+    setLoading(false); setInput("")
+  }
+
+  function finish() { clear(); state.seriesId ? router.push(`/series/${state.seriesId}`) : router.refresh() }
+  function skip() { clear(); setDismissed(true) }
+
+  if (dismissed) return (
+    <div className="border border-dashed border-white/10 rounded-2xl p-12 text-center">
+      <p className="text-white/50 text-sm mb-4">No series yet. Create one to get started!</p>
+    </div>
+  )
+
+  const stepNum: Record<Step, number> = {
+    welcome: 1, "character-input": 2, "character-creating": 2,
+    "portrait-style": 3, "portrait-creating": 3,
+    "world-input": 4, "world-creating": 4,
+    "series-input": 5, "series-creating": 5, "all-done": 6,
+  }
+
+  return (
+    <div className="bg-amber-900/10 border border-amber-700/20 rounded-2xl p-8">
+      <div className="flex gap-4 items-start">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/winston.png" alt="Winston" className="w-14 h-14 rounded-full object-cover object-top border border-amber-600/40 shrink-0" />
+        <div className="flex-1 space-y-4">
+
+          {state.step === "welcome" && <>
+            <p className="text-white/80 text-sm leading-relaxed">Hey {userName}! I&apos;m Winston, your resident bookworm. Let me help you set up your first story — we&apos;ll create a character, build a world, pick an art style, and set up a series. Takes about a minute.</p>
+            <div className="flex gap-2">
+              <button onClick={() => up({ step: "character-input" })} className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors">Let&apos;s get started</button>
+              <button onClick={skip} className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 px-4 py-2 rounded-lg transition-colors">I&apos;ll explore on my own</button>
+            </div>
+          </>}
+
+          {state.step === "character-input" && <>
+            <p className="text-white/80 text-sm leading-relaxed">First, your main character. Describe them in a sentence or two, or I can surprise you.</p>
+            <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="e.g. A shy 6-year-old boy with red curly hair who loves collecting bugs and wears rain boots everywhere" rows={3} maxLength={500} autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); createCharacter() } }}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
+            <div className="flex gap-2">
+              <button onClick={() => createCharacter()} disabled={!input.trim() || loading} className="text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors">Create this character</button>
+              <button onClick={() => createCharacter("")} disabled={loading} className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white/70 px-4 py-2 rounded-lg transition-colors">Surprise me</button>
+            </div>
+          </>}
+
+          {state.step === "character-creating" && <Loading text="Winston is crafting your character..." />}
+
+          {state.step === "portrait-style" && <>
+            <p className="text-white/80 text-sm leading-relaxed"><strong>{state.characterName}</strong> is created! Now pick an art style for their portrait — this will also be the default for story illustrations.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {ART_STYLES.map((s) => (
+                <button key={s.value} onClick={() => setSelectedStyle(s.value)}
+                  className={`text-xs px-3 py-2.5 rounded-xl border text-center transition-colors ${selectedStyle === s.value ? "bg-indigo-600 border-indigo-500 text-white" : "bg-white/5 border-white/10 text-white/50 hover:border-white/20 hover:text-white/70"}`}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={generatePortrait} disabled={loading || !selectedStyle} className="text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors">Generate portrait</button>
+              <button onClick={() => up({ step: "world-input" })} className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 px-4 py-2 rounded-lg transition-colors">Skip portrait</button>
+            </div>
+          </>}
+
+          {state.step === "portrait-creating" && <Loading text={`Generating ${state.characterName}'s portrait...`} />}
+
+          {state.step === "world-input" && <>
+            {state.portraitUrl && (
+              <div className="flex items-center gap-4 mb-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={state.portraitUrl} alt={state.characterName ?? ""} className="w-16 h-16 rounded-xl object-cover border border-white/10" />
+                <p className="text-white/60 text-sm">Looking good!</p>
+              </div>
+            )}
+            <p className="text-white/80 text-sm leading-relaxed">Now let&apos;s build a world for {state.characterName}&apos;s stories. Describe the setting, or let me create one.</p>
+            <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="e.g. A cozy village at the edge of a whispering forest where animals can talk after sunset" rows={2} maxLength={500} autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); createWorld() } }}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
+            <div className="flex gap-2">
+              <button onClick={() => createWorld()} disabled={!input.trim() || loading} className="text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors">Create this world</button>
+              <button onClick={() => createWorld("")} disabled={loading} className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white/70 px-4 py-2 rounded-lg transition-colors">Build one for me</button>
+              <button onClick={() => up({ step: "series-input" })} className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/30 px-4 py-2 rounded-lg transition-colors">Skip</button>
+            </div>
+          </>}
+
+          {state.step === "world-creating" && <Loading text="Building your world..." />}
+
+          {state.step === "series-input" && <>
+            <p className="text-white/80 text-sm leading-relaxed">Almost there! Let&apos;s name your story series — all of {state.characterName}&apos;s adventures will live here.</p>
+            <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder={`e.g. "${state.characterName}'s Adventures"`} maxLength={200} autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createSeries() } }}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none focus:border-indigo-500 transition-colors" />
+            <div className="flex gap-2">
+              <button onClick={() => createSeries()} disabled={!input.trim() || loading} className="text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors">Create series</button>
+              <button onClick={() => createSeries("")} disabled={loading} className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white/70 px-4 py-2 rounded-lg transition-colors">Pick a name for me</button>
+            </div>
+          </>}
+
+          {state.step === "series-creating" && <Loading text={`Setting up your series and linking ${state.characterName}...`} />}
+
+          {state.step === "all-done" && <>
+            <p className="text-white/80 text-sm leading-relaxed">You&apos;re all set! <strong>{state.characterName}</strong> is linked to <strong>{state.seriesName}</strong>{state.worldName ? ` in the world of ${state.worldName}` : ""}. Head to your series to generate your first bedtime story.</p>
+            <button onClick={finish} className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors">Go to my series</button>
+          </>}
+
+          {/* Progress */}
+          <div className="flex gap-1.5 pt-1">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <div key={n} className={`h-1 rounded-full transition-all duration-300 ${n <= stepNum[state.step] ? "bg-amber-500 flex-[2]" : "bg-white/10 flex-1"}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Loading({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-3 py-2">
+      <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+      <p className="text-amber-300/70 text-sm">{text}</p>
+    </div>
+  )
+}

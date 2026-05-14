@@ -1,0 +1,456 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Enums stored as strings (SQLite doesn't support native enums)
+// SharePolicy: PRIVATE | UNLISTED | PUBLIC_VIEW | PUBLIC_REUSE | PUBLIC_REMIX
+// StoryMode: CALM_BEDTIME | COZY_ADVENTURE | MORAL_LESSON | DREAMLIKE | SIBLING_FAMILY | WHAT_IF_BRANCH | CUSTOM
+// StoryType: NEW | CONTINUATION
+// AgeBand: TODDLER | EARLY | MIDDLE | TWEEN | PRETEEN
+// RunStatus: PENDING | RUNNING | COMPLETED | FAILED | PARTIAL
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  series             Series[]
+  characterTemplates CharacterTemplate[]
+  worldTemplates     WorldTemplate[]
+  artStylePresets    ArtStylePreset[]
+  storyPromptSeeds   StoryPromptSeed[]
+  generationRuns     GenerationRun[]
+  importedAssets     ImportedAsset[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Series {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  sharePolicy String    @default("PRIVATE")
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branches           Branch[]
+  characterInstances CharacterInstance[]
+  worldInstance      WorldInstance?
+  worldCanon         WorldCanon?
+  worldLinks         SeriesWorldLink[]
+  artStyleLinks      SeriesArtStyleLink[]
+  promptSeedLinks    SeriesPromptSeedLink[]
+
+  @@index([userId])
+  @@index([archivedAt])
+}
+
+model Branch {
+  id              String    @id @default(cuid())
+  seriesId        String
+  name            String
+  description     String?
+  isCanon         Boolean   @default(true)
+  parentBranchId  String?
+  forkFromStoryId String?
+  sharePolicy     String    @default("PRIVATE")
+  archivedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  series        Series        @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  parentBranch  Branch?       @relation("BranchForks", fields: [parentBranchId], references: [id])
+  childBranches Branch[]      @relation("BranchForks")
+  forkFromStory Story?        @relation("StoryForks", fields: [forkFromStoryId], references: [id])
+  volumes       Volume[]
+  branchMemory  BranchMemory?
+
+  @@index([seriesId])
+}
+
+model Volume {
+  id          String    @id @default(cuid())
+  branchId    String
+  name        String
+  description String?
+  order       Int
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  branch  Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  stories Story[]
+
+  @@index([branchId])
+  @@unique([branchId, order])
+}
+
+model Story {
+  id             String    @id @default(cuid())
+  volumeId       String
+  title          String
+  content        Json
+  storyType      String    @default("NEW")
+  mode           String
+  ageBand        String
+  parentStoryId  String?
+  sharePolicy    String    @default("PRIVATE")
+  order          Int
+  readingTimeMin Int?
+  wordCount      Int?
+  archivedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  volume         Volume         @relation(fields: [volumeId], references: [id], onDelete: Cascade)
+  parentStory    Story?         @relation("StoryContinuation", fields: [parentStoryId], references: [id])
+  continuations  Story[]        @relation("StoryContinuation")
+  forkedBranches Branch[]       @relation("StoryForks")
+  generationRun  GenerationRun?
+  sceneSpecs     SceneSpec[]
+  imageAssets    ImageAsset[]
+
+  @@index([volumeId])
+  @@index([parentStoryId])
+}
+
+model CharacterTemplate {
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  description     String?
+  essence         Json
+  visualProfile   Json?
+  portraitAssetId String?
+  tags            Json      @default(dbgenerated("'[]'" ))
+  sharePolicy     String    @default("PRIVATE")
+  archivedAt      DateTime?
+  provenanceId    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  instances  CharacterInstance[]
+  provenance SharedAssetProvenance? @relation(fields: [provenanceId], references: [id])
+
+  @@index([userId])
+  @@index([sharePolicy])
+}
+
+model CharacterInstance {
+  id                  String    @id @default(cuid())
+  seriesId            String
+  characterTemplateId String
+  nameOverride        String?
+  memoryState         Json
+  branchOverrides     Json      @default(dbgenerated("'{}'" ))
+  archivedAt          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  series            Series            @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  characterTemplate CharacterTemplate @relation(fields: [characterTemplateId], references: [id])
+  characterMemory   CharacterMemory?
+
+  @@unique([seriesId, characterTemplateId])
+  @@index([seriesId])
+}
+
+model CharacterMemory {
+  id                  String   @id @default(cuid())
+  characterInstanceId String   @unique
+  stableFacts         Json
+  evolvingState       Json
+  eventLog            Json     @default(dbgenerated("'[]'" ))
+  updatedAt           DateTime @updatedAt
+
+  characterInstance CharacterInstance @relation(fields: [characterInstanceId], references: [id], onDelete: Cascade)
+}
+
+model WorldTemplate {
+  id           String    @id @default(cuid())
+  userId       String
+  name         String
+  description  String?
+  rules        Json
+  toneGuide    Json
+  tags         Json      @default(dbgenerated("'[]'" ))
+  sharePolicy  String    @default("PRIVATE")
+  archivedAt   DateTime?
+  provenanceId String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  instances   WorldInstance[]
+  seriesLinks SeriesWorldLink[]
+  provenance  SharedAssetProvenance? @relation(fields: [provenanceId], references: [id])
+
+  @@index([userId])
+  @@index([sharePolicy])
+}
+
+model SeriesWorldLink {
+  id              String   @id @default(cuid())
+  seriesId        String
+  worldTemplateId String
+  createdAt       DateTime @default(now())
+
+  series        Series        @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  worldTemplate WorldTemplate @relation(fields: [worldTemplateId], references: [id], onDelete: Cascade)
+
+  @@unique([seriesId, worldTemplateId])
+  @@index([seriesId])
+}
+
+model WorldInstance {
+  id              String   @id @default(cuid())
+  seriesId        String   @unique
+  worldTemplateId String
+  state           Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  series        Series        @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  worldTemplate WorldTemplate @relation(fields: [worldTemplateId], references: [id])
+}
+
+model WorldCanon {
+  id        String   @id @default(cuid())
+  seriesId  String   @unique
+  rules     Json
+  lore      Json
+  toneGuide Json
+  updatedAt DateTime @updatedAt
+
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+}
+
+model BranchMemory {
+  id        String   @id @default(cuid())
+  branchId  String   @unique
+  facts     Json
+  eventLog  Json     @default(dbgenerated("'[]'" ))
+  updatedAt DateTime @updatedAt
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+}
+
+model SharedAssetProvenance {
+  id                  String   @id @default(cuid())
+  originalCreatorId   String
+  originalAssetId     String
+  originalAssetType   String
+  attributionRequired Boolean  @default(true)
+  remixAllowed        Boolean  @default(false)
+  createdAt           DateTime @default(now())
+
+  characterTemplates CharacterTemplate[]
+  worldTemplates     WorldTemplate[]
+  artStylePresets    ArtStylePreset[]
+  storyPromptSeeds   StoryPromptSeed[]
+}
+
+model ImportedAsset {
+  id           String   @id @default(cuid())
+  userId       String
+  assetType    String
+  assetId      String
+  provenanceId String
+  importedAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([assetType, assetId])
+}
+
+model GenerationRun {
+  id                 String    @id @default(cuid())
+  userId             String
+  storyId            String?   @unique
+  status             String    @default("PENDING")
+  requestPayload     Json
+  normalizedRequest  Json?
+  contextPack        Json?
+  promptVersions     Json?
+  providerLog        Json      @default(dbgenerated("'[]'" ))
+  validationReports  Json      @default(dbgenerated("'[]'" ))
+  repairInstructions Json      @default(dbgenerated("'[]'" ))
+  tokenUsage         Json?
+  costEstimateUsd    Float?
+  latencyMs          Int?
+  errors             Json      @default(dbgenerated("'[]'" ))
+  finalOutput        Json?
+  createdAt          DateTime  @default(now())
+  completedAt        DateTime?
+
+  user  User   @relation(fields: [userId], references: [id])
+  story Story? @relation(fields: [storyId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model SceneSpec {
+  id          String   @id @default(cuid())
+  storyId     String
+  order       Int
+  description String
+  characters  Json     @default(dbgenerated("'[]'" ))
+  setting     String
+  mood        String
+  lighting    String?
+  imagePrompt String?
+  createdAt   DateTime @default(now())
+
+  story      Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  imageAsset ImageAsset?
+
+  @@index([storyId])
+}
+
+model ImageAsset {
+  id                  String   @id @default(cuid())
+  name                String   @default("Untitled Portrait")
+  assetType           String   @default("story_scene")
+  storyId             String?
+  sceneSpecId         String?  @unique
+  characterTemplateId String?
+  storageKey          String
+  url                 String
+  prompt              String
+  negativePrompt      String?
+  provider            String
+  model               String
+  width               Int?
+  height              Int?
+  metadata            Json
+  createdAt           DateTime @default(now())
+
+  story     Story?     @relation(fields: [storyId], references: [id])
+  sceneSpec SceneSpec? @relation(fields: [sceneSpecId], references: [id])
+
+  @@index([storyId])
+  @@index([assetType])
+  @@index([characterTemplateId])
+}
+
+model ArtStylePreset {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  description   String?
+  styleKeywords Json      @default(dbgenerated("'[]'" ))
+  medium        String?
+  colorPalette  String?
+  negativeTerms Json      @default(dbgenerated("'[]'" ))
+  sharePolicy   String    @default("PRIVATE")
+  archivedAt    DateTime?
+  provenanceId  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seriesLinks SeriesArtStyleLink[]
+  provenance  SharedAssetProvenance? @relation(fields: [provenanceId], references: [id])
+
+  @@index([userId])
+  @@index([sharePolicy])
+}
+
+model SeriesArtStyleLink {
+  id               String   @id @default(cuid())
+  seriesId         String
+  artStylePresetId String
+  createdAt        DateTime @default(now())
+
+  series         Series         @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  artStylePreset ArtStylePreset @relation(fields: [artStylePresetId], references: [id], onDelete: Cascade)
+
+  @@unique([seriesId, artStylePresetId])
+  @@index([seriesId])
+}
+
+model StoryPromptSeed {
+  id             String    @id @default(cuid())
+  userId         String
+  name           String
+  prompt         String
+  themes         Json      @default(dbgenerated("'[]'" ))
+  suggestedModes Json      @default(dbgenerated("'[]'" ))
+  sharePolicy    String    @default("PRIVATE")
+  archivedAt     DateTime?
+  provenanceId   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seriesLinks SeriesPromptSeedLink[]
+  provenance  SharedAssetProvenance? @relation(fields: [provenanceId], references: [id])
+
+  @@index([userId])
+  @@index([sharePolicy])
+}
+
+model SeriesPromptSeedLink {
+  id                String   @id @default(cuid())
+  seriesId          String
+  storyPromptSeedId String
+  createdAt         DateTime @default(now())
+
+  series          Series          @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  storyPromptSeed StoryPromptSeed @relation(fields: [storyPromptSeedId], references: [id], onDelete: Cascade)
+
+  @@unique([seriesId, storyPromptSeedId])
+  @@index([seriesId])
+}

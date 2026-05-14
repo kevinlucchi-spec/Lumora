@@ -1,0 +1,28 @@
+name: bedtimestory
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bedtimestory-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bedtimestory
+    ports:
+      - "5435:5432"
+    volumes:
+      - bedtimestory-postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: bedtimestory-redis
+    ports:
+      - "6382:6379"
+    volumes:
+      - bedtimestory-redis-data:/data
+    restart: unless-stopped
+
+volumes:
+  bedtimestory-postgres-data:
+  bedtimestory-redis-data:
