@@ -16,7 +16,7 @@ export async function GET(_req: NextRequest) {
     where: { userId: session.user.id, archivedAt: null },
     select: { id: true },
   })
-  const characterIds = userCharacterIds.map((c) => c.id)
+  const characterIds = userCharacterIds.map((c: { id: string }) => c.id)
 
   if (characterIds.length === 0) {
     return NextResponse.json({ portraits: [] })
@@ -48,7 +48,7 @@ export async function GET(_req: NextRequest) {
   })
   for (const t of templates) characterMap.set(t.id, t.name)
 
-  const result = portraits.map((p) => ({
+  const result = portraits.map((p: { id: string; name: string; url: string; provider: string; prompt: string; createdAt: Date; characterTemplateId: string | null }) => ({
     id: p.id,
     name: p.name,
     url: p.url.startsWith("http") || p.url.startsWith("data:") ? p.url : `/api/images/${p.url}`,

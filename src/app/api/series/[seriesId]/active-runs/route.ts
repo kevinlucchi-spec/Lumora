@@ -28,7 +28,7 @@ export async function GET(
   })
 
   return NextResponse.json({
-    runs: runs.map((r) => ({
+    runs: runs.map((r: { id: string; status: string; providerLog: unknown; storyId: string | null }) => ({
       runId: r.id,
       status: r.status,
       steps: r.providerLog as Array<{ step: string; status: string }>,
