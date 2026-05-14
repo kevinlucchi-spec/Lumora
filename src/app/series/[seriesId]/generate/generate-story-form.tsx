@@ -407,8 +407,8 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
                       {isSelected && <span className="text-white text-xs">&#10003;</span>}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{c.name}{isLocked ? " (inherited)" : ""}</p>
-                      {c.description && <p className="text-xs text-white/30 truncate">{c.description}</p>}
+                      <p className="text-sm font-medium">{c.name}{isLocked ? " (inherited)" : ""}</p>
+                      {c.description && <p className="text-xs text-white/30 leading-relaxed">{c.description}</p>}
                     </div>
                   </button>
                 )
@@ -459,7 +459,7 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
         {storyIdeaMode === "custom" && (
           <div className="mt-2">
             <textarea value={customPrompt} onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="What happens in this story? (1 sentence is enough)"
+              placeholder="What happens in this story? A sentence is enough, or go into as much detail as you'd like."
               rows={3} maxLength={2000}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/25 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
             <p className="text-xs text-white/30 mt-1">{customPrompt.length} / 2000</p>
@@ -474,9 +474,26 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
           <p className="text-xs text-white/30 mt-2">AI will create a coherent world setting that fits the story.</p>
         )}
         {worldInputMode === "library" && (
-          <CustomSelect value={selectedWorld} onChange={setSelectedWorld}
-            placeholder="Select a world" className="mt-2"
-            options={worlds.map((w) => ({ value: w.id, label: w.name + (w.description ? ` \u2014 ${w.description}` : "") }))} />
+          <div className="grid grid-cols-1 gap-2 mt-2">
+            {worlds.map((w) => (
+              <button key={w.id} type="button" onClick={() => setSelectedWorld(selectedWorld === w.id ? "" : w.id)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors ${
+                  selectedWorld === w.id
+                    ? "border-indigo-500 bg-indigo-500/15 text-white"
+                    : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white/70"
+                }`}>
+                <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${
+                  selectedWorld === w.id ? "bg-indigo-600 border-indigo-500" : "border-white/20"
+                }`}>
+                  {selectedWorld === w.id && <span className="text-white text-xs">&#10003;</span>}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{w.name}</p>
+                  {w.description && <p className="text-xs text-white/30 leading-relaxed">{w.description}</p>}
+                </div>
+              </button>
+            ))}
+          </div>
         )}
         {worldInputMode === "custom" && (
           <textarea value={customWorld} onChange={(e) => setCustomWorld(e.target.value)}

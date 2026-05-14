@@ -87,11 +87,7 @@ export async function POST(
  * tts-1-hd responds to context framing and punctuation styling.
  */
 function addStorytellingCues(text: string): string {
-  return text
-    // Add a beat before dialogue
-    .replace(/([.!?])\s*"/g, "$1 ... \"")
-    // Em-dash pauses
-    .replace(/ — /g, " —— ")
-    // Soft trailing ending
-    .replace(/\.\s*$/, ". ...")
+  // Keep it clean — TTS reads punctuation literally if we add symbols
+  // Just ensure natural sentence breaks are present
+  return text.trim()
 }

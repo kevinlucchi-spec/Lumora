@@ -96,7 +96,7 @@ export default async function StoryReaderPage({
 
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
-      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-2xl mx-auto">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-2xl mx-auto overflow-x-hidden">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-white/40 mb-8">
           <Link href="/series" className="hover:text-white transition-colors">Series</Link>
@@ -170,7 +170,7 @@ export default async function StoryReaderPage({
               return (
                 <div key={page.pageNumber ?? i} data-page-index={i}>
                   {/* Opening page gets special treatment */}
-                  <p className={`text-white/90 leading-relaxed ${
+                  <p className={`text-white/90 leading-relaxed break-words ${
                     isFirst ? "text-xl first-letter:text-4xl first-letter:font-serif first-letter:text-indigo-300 first-letter:float-left first-letter:mr-2 first-letter:mt-1" :
                     isLast ? "text-lg italic text-white/70" :
                     "text-lg"

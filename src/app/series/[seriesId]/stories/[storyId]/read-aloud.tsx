@@ -61,8 +61,8 @@ export function ReadAloud({ seriesId, storyId, pageCount }: Props) {
     setPlaying(true)
     setCurrentPage(0)
 
-    // Scroll to first page immediately
-    document.querySelector(`[data-page-index="0"]`)?.scrollIntoView({ behavior: "smooth", block: "center" })
+    // Scroll to the top of the story
+    document.querySelector(`[data-page-index="0"]`)?.scrollIntoView({ behavior: "smooth", block: "start" })
 
     // Start fetching page 0 and page 1 in parallel for faster start
     let nextPagePromise: Promise<Blob | null> | null = null

@@ -38,10 +38,11 @@ Return ONLY a valid JSON array (no markdown fences) with this EXACT structure fo
 ]
 
 RULES:
-- You MUST return at least 1 scene. Every story has at least one illustratable moment.
-- Select the most meaningful moments: emotional peaks, setting reveals, transformation moments, resolution moments
-- Return at MOST ${maxImages} scenes. You may return fewer if the story doesn't warrant more.
-- ALL returned scenes should have "warrantsIllustration": true
+- You MUST return EXACTLY ${maxImages} scenes. Every bedtime story has multiple illustratable moments — find them.
+- Spread scenes evenly through the story: one near the opening, one or more in the middle, one near the ending.
+- Select moments with visual interest: emotional peaks, setting reveals, character interactions, atmospheric moments, the resolution.
+- ALL returned scenes MUST have "warrantsIllustration": true
+- Do NOT return fewer than ${maxImages} scenes. A picture book needs illustrations throughout.
 - "order" must be a number starting from 0
 - "description" must be a string
 - "characters" must be an array of character name strings
