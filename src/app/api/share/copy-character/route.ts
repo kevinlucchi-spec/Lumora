@@ -49,17 +49,34 @@ export async function POST(req: Request) {
     },
   })
 
-  // Copy the portrait if it exists
+  // Copy the portrait if it exists — duplicate the actual image file
   if (original.portraitAssetId) {
     const portrait = await prisma.imageAsset.findUnique({ where: { id: original.portraitAssetId } })
     if (portrait) {
+      let newStorageKey = portrait.storageKey
+      let newUrl = portrait.url
+
+      // Duplicate the image file in R2 so the copy is independent
+      const R2_CONFIGURED = !!(process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID && process.env.S3_BUCKET)
+      if (R2_CONFIGURED && !portrait.url.startsWith("data:") && !portrait.url.startsWith("http")) {
+        try {
+          const { getSignedReadUrl, downloadAndUpload } = await import("@/lib/storage/r2")
+          const signedUrl = await getSignedReadUrl(portrait.storageKey, 120)
+          newStorageKey = `portraits/${copy.id}/${Date.now()}.png`
+          await downloadAndUpload(signedUrl, newStorageKey)
+          newUrl = newStorageKey
+        } catch {
+          // Fallback: reference the same file (better than no portrait)
+        }
+      }
+
       const newPortrait = await prisma.imageAsset.create({
         data: {
           name: `${original.name} Portrait (copy)`,
           assetType: "character_portrait",
           characterTemplateId: copy.id,
-          storageKey: portrait.storageKey,
-          url: portrait.url,
+          storageKey: newStorageKey,
+          url: newUrl,
           prompt: portrait.prompt,
           negativePrompt: portrait.negativePrompt,
           provider: portrait.provider,
