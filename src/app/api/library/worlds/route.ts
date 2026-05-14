@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
-import type { Prisma } from "@prisma/client"
 
 const CreateWorldSchema = z.object({
   name: z.string().min(1).max(200),
@@ -32,8 +31,8 @@ export async function POST(req: Request) {
   const world = await prisma.worldTemplate.create({
     data: {
       ...rest,
-      rules: rules as Prisma.InputJsonValue,
-      toneGuide: toneGuide as Prisma.InputJsonValue,
+      rules: rules as never,
+      toneGuide: toneGuide as never,
       userId: session.user.id,
     },
   })

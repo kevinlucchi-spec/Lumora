@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
-import type { Prisma } from "@prisma/client"
 
 const UpdateWorldSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -39,9 +38,9 @@ export async function PATCH(
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
 
   const { rules, toneGuide, ...rest } = parsed.data
-  const data: Prisma.WorldTemplateUpdateInput = { ...rest }
-  if (rules !== undefined) data.rules = rules as Prisma.InputJsonValue
-  if (toneGuide !== undefined) data.toneGuide = toneGuide as Prisma.InputJsonValue
+  const data: Record<string, unknown> = { ...rest }
+  if (rules !== undefined) data.rules = rules
+  if (toneGuide !== undefined) data.toneGuide = toneGuide
 
   const result = await prisma.worldTemplate.updateMany({
     where: { id: worldId, userId: session.user.id, archivedAt: null },
