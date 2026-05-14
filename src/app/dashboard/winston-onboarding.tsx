@@ -57,6 +57,22 @@ export function WinstonOnboarding({ userName }: Props) {
   const [loading, setLoading] = useState(false)
   const [dismissed, setDismissed] = useState(false)
 
+  const stepOrder: Step[] = ["welcome", "age-band", "character-input", "portrait-style", "world-input", "series-input", "all-done"]
+  function goBack() {
+    // Find the previous navigable step (skip creating/loading steps)
+    const currentIdx = stepOrder.indexOf(state.step)
+    // Handle "creating" steps — map them back to their input step
+    const mappedStep: Step =
+      state.step === "character-creating" ? "character-input" :
+      state.step === "portrait-creating" ? "portrait-style" :
+      state.step === "world-creating" ? "world-input" :
+      state.step === "series-creating" ? "series-input" :
+      state.step
+    const idx = stepOrder.indexOf(mappedStep)
+    if (idx > 0) up({ step: stepOrder[idx - 1] })
+  }
+  const canGoBack = state.step !== "welcome" && !loading && !state.step.endsWith("-creating")
+
   useEffect(() => { save(state) }, [state])
   function up(patch: Partial<State>) { setState((prev) => ({ ...prev, ...patch })) }
 
@@ -253,11 +269,19 @@ export function WinstonOnboarding({ userName }: Props) {
             <button onClick={finish} className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors">Go to my series</button>
           </>}
 
-          {/* Progress */}
-          <div className="flex gap-1.5 pt-1">
-            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-              <div key={n} className={`h-1 rounded-full transition-all duration-300 ${n <= stepNum[state.step] ? "bg-amber-500 flex-[2]" : "bg-white/10 flex-1"}`} />
-            ))}
+          {/* Navigation + Progress */}
+          <div className="flex items-center gap-3 pt-1">
+            {canGoBack && (
+              <button onClick={goBack} className="text-xs text-white/30 hover:text-white/50 transition-colors shrink-0">&larr; Back</button>
+            )}
+            <div className="flex gap-1.5 flex-1">
+              {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                <div key={n} className={`h-1 rounded-full transition-all duration-300 ${n <= stepNum[state.step] ? "bg-amber-500 flex-[2]" : "bg-white/10 flex-1"}`} />
+              ))}
+            </div>
+            {state.step !== "welcome" && !loading && (
+              <button onClick={() => { clear(); setState({ step: "welcome" }) }} className="text-xs text-white/20 hover:text-white/40 transition-colors shrink-0">Start over</button>
+            )}
           </div>
         </div>
       </div>

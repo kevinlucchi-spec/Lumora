@@ -5,7 +5,7 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-screen bg-[#0f0a1e] text-white">
       <nav className="flex items-center justify-between px-8 py-5 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-2xl">🌙</span>
           <span className="text-xl font-semibold tracking-tight">Lumora</span>
         </Link>
