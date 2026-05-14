@@ -83,12 +83,34 @@ export async function POST(
       throw new Error("Cannot access current portrait for editing")
     }
 
-    // Edit with Gemini
-    const result = await editImageWithGemini(googleKey, {
-      imageBase64,
-      mimeType,
-      editInstruction: parsed.data.editInstruction,
-    })
+    // Try Gemini first, fall back to GPT Image edit
+    let result
+    try {
+      result = await editImageWithGemini(googleKey, {
+        imageBase64,
+        mimeType,
+        editInstruction: parsed.data.editInstruction,
+      })
+    } catch (geminiErr) {
+      console.warn("[portrait-edit] Gemini failed, trying GPT Image:", (geminiErr as Error).message)
+      const OpenAI = (await import("openai")).default
+      const { toFile } = await import("openai")
+      const openaiKey = process.env.OPENAI_API_KEY
+      if (!openaiKey) throw geminiErr
+      const client = new OpenAI({ apiKey: openaiKey })
+      const imageBuffer = Buffer.from(imageBase64, "base64")
+      const file = await toFile(imageBuffer, "portrait.png", { type: "image/png" })
+      const response = await client.images.edit({
+        model: "gpt-image-1",
+        image: [file],
+        prompt: `Edit this character portrait: ${parsed.data.editInstruction}. Keep the same character, art style, and composition. Only change what was requested.`,
+        n: 1,
+        size: "1024x1024",
+      })
+      const b64 = response.data?.[0]?.b64_json
+      if (!b64) throw new Error("GPT Image edit returned no image")
+      result = { imageBase64: b64, mimeType: "image/png" }
+    }
 
     // Save the edited image
     const editedDataUrl = `data:${result.mimeType};base64,${result.imageBase64}`
