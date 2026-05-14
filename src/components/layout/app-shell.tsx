@@ -16,7 +16,7 @@ const NAV = [
     { label: "Art Styles", href: "/library/art-styles" },
   ]},
   { label: "Discover", href: "/discover", icon: "🔍" },
-  { label: "Runs", href: "/runs", icon: "⚙" },
+  // { label: "Runs", href: "/runs", icon: "⚙" }, // Hidden — admin only
   { label: "Help", href: "/help", icon: "?" },
   { label: "Settings", href: "/settings", icon: "◈" },
 ]
