@@ -8,10 +8,19 @@ interface Props {
   userName: string
 }
 
-type Step = "welcome" | "character-input" | "character-creating" | "portrait-style" | "portrait-creating" | "world-input" | "world-creating" | "series-input" | "series-creating" | "all-done"
+type Step = "welcome" | "age-band" | "character-input" | "character-creating" | "portrait-style" | "portrait-creating" | "world-input" | "world-creating" | "series-input" | "series-creating" | "all-done"
+
+const AGE_BANDS = [
+  { value: "TODDLER", label: "Toddler", sub: "2–3 years" },
+  { value: "EARLY", label: "Early", sub: "4–6 years" },
+  { value: "MIDDLE", label: "Middle", sub: "7–9 years" },
+  { value: "TWEEN", label: "Tween", sub: "10–12 years" },
+  { value: "PRETEEN", label: "Preteen", sub: "12+ years" },
+]
 
 interface State {
   step: Step
+  ageBand?: string
   characterId?: string
   characterName?: string
   artStyle?: string
@@ -63,9 +72,10 @@ export function WinstonOnboarding({ userName }: Props) {
   async function createCharacter(userInput?: string) {
     const desc = userInput ?? input.trim()
     setLoading(true); up({ step: "character-creating" })
+    const ageContext = state.ageBand ? `The target audience is ${state.ageBand} (${AGE_BANDS.find(a => a.value === state.ageBand)?.sub ?? ""}). Create a character appropriate for this age group.` : ""
     const prompt = desc
-      ? `Create a character based on: "${desc}". Include detailed appearance, personality, voice tone, and age.`
-      : "Create a fun, unique bedtime story character. Creative and unexpected. Detailed appearance, personality, voice tone, specific age."
+      ? `Create a character based on: "${desc}". ${ageContext} Include detailed appearance, personality, voice tone, and age.`
+      : `Create a fun, unique bedtime story character. ${ageContext} Creative and unexpected. Detailed appearance, personality, voice tone, specific age.`
     const data = await callWinston(prompt)
     if (data?.action) {
       const result = await execAction(data.action)
@@ -136,10 +146,11 @@ export function WinstonOnboarding({ userName }: Props) {
   )
 
   const stepNum: Record<Step, number> = {
-    welcome: 1, "character-input": 2, "character-creating": 2,
-    "portrait-style": 3, "portrait-creating": 3,
-    "world-input": 4, "world-creating": 4,
-    "series-input": 5, "series-creating": 5, "all-done": 6,
+    welcome: 1, "age-band": 2,
+    "character-input": 3, "character-creating": 3,
+    "portrait-style": 4, "portrait-creating": 4,
+    "world-input": 5, "world-creating": 5,
+    "series-input": 6, "series-creating": 6, "all-done": 7,
   }
 
   return (
@@ -150,10 +161,25 @@ export function WinstonOnboarding({ userName }: Props) {
         <div className="flex-1 space-y-4">
 
           {state.step === "welcome" && <>
-            <p className="text-white/80 text-sm leading-relaxed">Hey {userName}! I&apos;m Winston, your resident bookworm. Let me help you set up your first story — we&apos;ll create a character, build a world, pick an art style, and set up a series. Takes about a minute.</p>
+            <p className="text-white/80 text-sm leading-relaxed">Hey {userName}! I&apos;m Winston, your resident bookworm. Let me help you set up your first story — we&apos;ll pick an audience, create a character, build a world, and set up a series. Takes about a minute.</p>
             <div className="flex gap-2">
-              <button onClick={() => up({ step: "character-input" })} className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors">Let&apos;s get started</button>
+              <button onClick={() => up({ step: "age-band" })} className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors">Let&apos;s get started</button>
               <button onClick={skip} className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 px-4 py-2 rounded-lg transition-colors">I&apos;ll explore on my own</button>
+            </div>
+          </>}
+
+          {state.step === "age-band" && <>
+            <p className="text-white/80 text-sm leading-relaxed">First — who are these stories for? This helps me create age-appropriate characters and stories.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {AGE_BANDS.map((a) => (
+                <button key={a.value} onClick={() => up({ step: "character-input", ageBand: a.value })}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-left hover:border-indigo-500/40 hover:bg-indigo-500/10 transition-colors">
+                  <div>
+                    <p className="text-sm font-medium text-white/80">{a.label}</p>
+                    <p className="text-xs text-white/40">{a.sub}</p>
+                  </div>
+                </button>
+              ))}
             </div>
           </>}
 
@@ -229,7 +255,7 @@ export function WinstonOnboarding({ userName }: Props) {
 
           {/* Progress */}
           <div className="flex gap-1.5 pt-1">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
+            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
               <div key={n} className={`h-1 rounded-full transition-all duration-300 ${n <= stepNum[state.step] ? "bg-amber-500 flex-[2]" : "bg-white/10 flex-1"}`} />
             ))}
           </div>
