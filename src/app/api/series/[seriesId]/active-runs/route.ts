@@ -22,7 +22,7 @@ export async function GET(
   })
 
   // Filter by seriesId in the request payload (JSON field)
-  const runs = allActive.filter((r) => {
+  const runs = allActive.filter((r: { requestPayload: unknown }) => {
     const payload = r.requestPayload as { seriesId?: string } | null
     return payload?.seriesId === seriesId
   })
