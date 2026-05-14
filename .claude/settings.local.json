@@ -42,7 +42,9 @@
       "Bash(__NEW_LINE_38eedbc36ecddd53__ curl -s -b cookies.txt -X POST http://localhost:3006/api/library/characters -H \"Content-Type: application/json\" -d '{:*)",
       "Bash(__NEW_LINE_d0d1e8ead19403ec__ curl -s -b cookies.txt -X POST http://localhost:3006/api/generate -H \"Content-Type: application/json\" -d '{:*)",
       "Bash(__NEW_LINE_166f232d1a66a5d0__ curl:*)",
-      "Bash(turso:*)"
+      "Bash(turso:*)",
+      "Bash(bash)",
+      "Bash(TURSO_DATABASE_URL=\"libsql://lumora-kevinlucchi-spec.aws-us-east-2.turso.io\" TURSO_AUTH_TOKEN=\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzg3ODE4NTYsImlkIjoiMDE5ZTI3YTgtNmUwMS03Yzg2LWFhYjEtODlhMTllNDZiNmQzIiwicmlkIjoiMjIzMzcxNDYtNzA3ZS00NTZjLTlmMDgtNThjNTMwMzBhZjg0In0.-FSfrp__WJmpnuErbiYHfOEaU8izobzEHm3a3yf9itU3ukBTU7oxKach0sKfi9jBDFsIDmLqJdSorie6m-bHAw\" node -e \":*)"
     ]
   }
 }
