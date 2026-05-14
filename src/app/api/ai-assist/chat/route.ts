@@ -174,7 +174,7 @@ async function getLiveContext(userId: string, pathname: string): Promise<string>
     })
 
     if (allStories.length > 0) {
-      parts.push("ALL STORIES:\n" + allStories.map((s) => {
+      parts.push("ALL STORIES:\n" + allStories.map((s: { id: string; title: string; mode: string; ageBand: string; wordCount: number | null; content: unknown; volume: { branch: { seriesId: string; series: { name: string } } } }) => {
         const pages = s.content as Array<{ text: string }>
         const preview = pages?.[0]?.text?.slice(0, 100) ?? ""
         return `- "${s.title}" in series "${s.volume.branch.series.name}" (id: ${s.id}, seriesId: ${s.volume.branch.seriesId}, ${s.mode}, ${s.ageBand}, ${s.wordCount ?? "?"} words) — ${preview}...`
@@ -190,7 +190,7 @@ async function getLiveContext(userId: string, pathname: string): Promise<string>
         include: { characterTemplate: { select: { id: true, name: true } } },
       })
       parts.push("LINKED TO THIS SERIES — Characters: " + (linked.length === 0 ? "(none)" :
-        linked.map((ci) => `${ci.characterTemplate.name} (templateId: ${ci.characterTemplate.id})`).join(", ")))
+        linked.map((ci: { characterTemplate: { id: string; name: string } }) => `${ci.characterTemplate.name} (templateId: ${ci.characterTemplate.id})`).join(", ")))
     }
 
     const storyMatch = pathname.match(/^\/series\/[^/]+\/stories\/([^/]+)$/)
@@ -403,7 +403,7 @@ async function executeAction(action: { id: string; params: Record<string, string
         let charIds = p.characterIds ? p.characterIds.split(",").filter(Boolean) : []
         if (charIds.length === 0) {
           const linked = await prisma.characterInstance.findMany({ where: { seriesId: p.seriesId, archivedAt: null }, select: { characterTemplateId: true } })
-          charIds = linked.map((ci) => ci.characterTemplateId)
+          charIds = linked.map((ci: { characterTemplateId: string }) => ci.characterTemplateId)
         }
         const { enqueueStoryGeneration } = await import("@/lib/services/generation.service")
         const { StoryGenerationRequestSchema } = await import("@/lib/schemas/request")
