@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ seriesI
     where: { seriesId, series: { userId: session.user.id } },
     include: { artStylePreset: { select: { id: true, name: true, medium: true, styleKeywords: true } } },
   })
-  return NextResponse.json(links.map((l) => l.artStylePreset))
+  return NextResponse.json(links.map((l: { artStylePreset: unknown }) => l.artStylePreset))
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ seriesId: string }> }) {

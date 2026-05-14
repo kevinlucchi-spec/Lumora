@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ seriesI
     where: { seriesId, series: { userId: session.user.id } },
     include: { storyPromptSeed: { select: { id: true, name: true, prompt: true, themes: true } } },
   })
-  return NextResponse.json(links.map((l) => l.storyPromptSeed))
+  return NextResponse.json(links.map((l: { storyPromptSeed: unknown }) => l.storyPromptSeed))
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ seriesId: string }> }) {

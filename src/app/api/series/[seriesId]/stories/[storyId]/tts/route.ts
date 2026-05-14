@@ -45,7 +45,7 @@ export async function POST(
   if (pageIndex !== undefined && pageIndex >= 0 && pageIndex < pages.length) {
     text = pages[pageIndex].text
   } else {
-    text = pages.map((p) => p.text).join("\n\n")
+    text = pages.map((p: { text: string }) => p.text).join("\n\n")
   }
 
   // Trim to OpenAI TTS limit (4096 chars per request)

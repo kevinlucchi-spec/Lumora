@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ seriesI
     where: { seriesId, series: { userId: session.user.id } },
     include: { worldTemplate: { select: { id: true, name: true, description: true } } },
   })
-  return NextResponse.json(links.map((l) => l.worldTemplate))
+  return NextResponse.json(links.map((l: { worldTemplate: unknown }) => l.worldTemplate))
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ seriesId: string }> }) {

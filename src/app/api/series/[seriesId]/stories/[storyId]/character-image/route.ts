@@ -28,7 +28,7 @@ export async function GET(
   const nameLower = name.toLowerCase()
   for (const scene of scenes) {
     const characters = scene.characters as string[]
-    const mentioned = characters.some((c) => c.toLowerCase().includes(nameLower) || nameLower.includes(c.toLowerCase()))
+    const mentioned = characters.some((c: string) => c.toLowerCase().includes(nameLower) || nameLower.includes(c.toLowerCase()))
     if (mentioned && scene.imageAsset) {
       const url = scene.imageAsset.url
       const imageUrl = url.startsWith("http") || url.startsWith("data:")

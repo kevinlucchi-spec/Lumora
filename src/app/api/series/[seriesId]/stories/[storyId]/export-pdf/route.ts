@@ -32,9 +32,9 @@ export async function GET(
   const pages = story.content as Array<{ pageNumber: number; text: string }>
 
   // Map images by scene spec for distribution
-  const imageBySceneId = new Map(story.imageAssets.map((a) => [a.sceneSpecId, a.url]))
+  const imageBySceneId = new Map(story.imageAssets.map((a: { sceneSpecId: string | null; url: string }) => [a.sceneSpecId, a.url]))
   const images = story.sceneSpecs
-    .map((spec) => imageBySceneId.get(spec.id))
+    .map((spec: { id: string }) => imageBySceneId.get(spec.id))
     .filter(Boolean) as string[]
 
   // Distribute images evenly
