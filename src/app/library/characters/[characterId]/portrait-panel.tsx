@@ -28,7 +28,6 @@ export function CharacterPortraitPanel({ characterId, initialPortraitUrl, initia
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const PORTRAIT_STYLES = [
-    { value: "", label: "Default" },
     { value: "traditional watercolor on textured cold-press paper, visible brushstrokes, paint bleeds and soft edges, muted washed-out pigments", label: "Watercolor" },
     { value: "clean vector-style digital illustration, smooth gradients, rounded friendly shapes, vivid saturated colors, modern children's book", label: "Modern Storybook" },
     { value: "Japanese anime cel animation style, sharp clean outlines, flat color fills with dramatic shading, large glossy eyes, Studio Ghibli detail", label: "Anime / Ghibli" },
@@ -37,6 +36,7 @@ export function CharacterPortraitPanel({ characterId, initialPortraitUrl, initia
     { value: "loose pencil and charcoal sketch on cream paper, crosshatching for shadows, no color, visible eraser marks, raw and expressive", label: "Pencil Sketch" },
     { value: "oil painting with thick impasto brushstrokes, rich deep colors, warm golden light, classical storybook fairy tale feel", label: "Oil Painting" },
     { value: "kawaii chibi style, extremely round simplified proportions, tiny body with oversized head, pastel candy colors, cute Japanese aesthetic", label: "Chibi / Kawaii" },
+    { value: "dark moody gouache, deep jewel tones on black background, dramatic chiaroscuro lighting, mysterious atmosphere, fairy tale inspired", label: "Dark Fantasy" },
   ]
 
   async function handleGenerate() {
@@ -208,7 +208,7 @@ export function CharacterPortraitPanel({ characterId, initialPortraitUrl, initia
                   <p className="text-[10px] text-white/40">Pick a style, then regenerate:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {PORTRAIT_STYLES.map((s) => (
-                      <button key={s.value} type="button" onClick={() => { setArtStyle(s.value); setCustomStyle("") }}
+                      <button key={s.value} type="button" onClick={() => { if (artStyle === s.value) { setArtStyle("") } else { setArtStyle(s.value); setCustomStyle("") } }}
                         className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
                           artStyle === s.value && !customStyle ? "bg-indigo-600 border-indigo-500 text-white" : "bg-white/5 border-white/10 text-white/40 hover:text-white/60"
                         }`}>{s.label}</button>
@@ -269,7 +269,7 @@ export function CharacterPortraitPanel({ characterId, initialPortraitUrl, initia
             <div className="space-y-2">
               <div className="flex flex-wrap gap-1.5">
                 {PORTRAIT_STYLES.map((s) => (
-                  <button key={s.value} type="button" onClick={() => { setArtStyle(s.value); setCustomStyle("") }}
+                  <button key={s.value} type="button" onClick={() => { if (artStyle === s.value) { setArtStyle("") } else { setArtStyle(s.value); setCustomStyle("") } }}
                     className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
                       artStyle === s.value && !customStyle ? "bg-indigo-600 border-indigo-500 text-white" : "bg-white/5 border-white/10 text-white/40 hover:text-white/60"
                     }`}>{s.label}</button>
