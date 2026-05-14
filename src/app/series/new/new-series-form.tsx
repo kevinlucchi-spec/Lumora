@@ -4,6 +4,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { AiAssistPanel } from "@/components/ai-assist-panel"
 
 const SHARE_OPTIONS = [
   { value: "PRIVATE", label: "Private", desc: "Only you can see this series" },
@@ -18,6 +19,15 @@ export function NewSeriesForm() {
   const [sharePolicy, setSharePolicy] = useState("PRIVATE")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+
+  function getCurrentValues() {
+    return { name, description }
+  }
+
+  function applyAiValues(fields: Record<string, string | string[]>) {
+    if (fields.name) setName(fields.name as string)
+    if (fields.description) setDescription(fields.description as string)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -46,6 +56,13 @@ export function NewSeriesForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <AiAssistPanel
+        assetType="world"
+        getCurrentValues={getCurrentValues}
+        onApply={applyAiValues}
+        placeholder='e.g. "A cozy adventure series about a girl and her talking cat" or "Bedtime stories set in a magical underwater kingdom"'
+      />
+
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1.5">
