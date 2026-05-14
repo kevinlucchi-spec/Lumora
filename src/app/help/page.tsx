@@ -106,7 +106,7 @@ export default async function HelpPage() {
 
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
-      <div className="px-8 py-10 max-w-3xl">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-3xl">
         <div className="mb-10">
           <h1 className="text-2xl font-bold mb-2">How Lumora Works</h1>
           <p className="text-white/50 text-sm">A step-by-step guide to creating bedtime stories with AI</p>

@@ -96,7 +96,7 @@ export default async function StoryReaderPage({
 
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
-      <div className="px-8 py-10 max-w-2xl mx-auto">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-2xl mx-auto">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-white/40 mb-8">
           <Link href="/series" className="hover:text-white transition-colors">Series</Link>

@@ -36,7 +36,7 @@ export default async function DashboardPage() {
 
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
-      <div className="px-8 py-10 max-w-5xl">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-5xl">
         <div className="mb-10">
           <h1 className="text-3xl font-bold mb-1">
             Good evening, {session.user?.name ?? "Storyteller"}

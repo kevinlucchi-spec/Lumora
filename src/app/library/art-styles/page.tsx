@@ -81,7 +81,7 @@ export default function ArtStylesPage() {
 
   return (
     <AppShell>
-      <div className="px-8 py-10 max-w-5xl">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-5xl">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold mb-1">Library</h1>

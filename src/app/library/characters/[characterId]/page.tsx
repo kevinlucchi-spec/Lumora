@@ -52,7 +52,7 @@ export default async function CharacterDetailPage({
 
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
-      <div className="px-8 py-10 max-w-4xl">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-4xl">
         <div className="flex items-center gap-2 text-sm text-white/40 mb-6">
           <Link href="/library/characters" className="hover:text-white transition-colors">Characters</Link>
           <span>/</span>

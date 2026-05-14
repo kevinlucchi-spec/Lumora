@@ -120,7 +120,7 @@ export default async function GenerateStoryPage({
 
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
-      <div className="px-8 py-10 max-w-2xl">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-2xl">
         <div className="flex items-center gap-2 text-sm text-white/40 mb-6">
           <Link href="/series" className="hover:text-white transition-colors">Series</Link>
           <span>/</span>

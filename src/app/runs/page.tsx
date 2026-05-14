@@ -46,7 +46,7 @@ export default async function RunsPage() {
 
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
-      <div className="px-8 py-10 max-w-5xl">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-5xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-1">Generation runs</h1>
           <p className="text-white/50 text-sm">

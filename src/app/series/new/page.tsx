@@ -10,7 +10,7 @@ export default async function NewSeriesPage() {
 
   return (
     <AppShell userName={session.user?.name ?? session.user?.email}>
-      <div className="px-8 py-10 max-w-2xl">
+      <div className="px-4 sm:px-8 py-6 sm:py-10 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-1">New series</h1>
           <p className="text-white/50 text-sm">Create a new story universe with its own characters, branches, and canon.</p>

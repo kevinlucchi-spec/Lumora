@@ -88,18 +88,18 @@ export function SeriesAssetTabs({ seriesId, branches, linked, global }: Props) {
 
     return (
       <>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <h2 className="text-base font-semibold">{TABS.find((t) => t.key === tab)?.label}</h2>
           <div className="flex gap-2">
             {available.length > 0 && (
               <button onClick={() => setShowPicker(!showPicker)}
-                className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 px-3 py-1.5 rounded-lg transition-colors">
-                {showPicker ? "Done" : "+ Link existing"}
+                className="text-xs sm:text-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 px-2.5 sm:px-3 py-1.5 rounded-lg transition-colors">
+                {showPicker ? "Done" : "+ Link"}
               </button>
             )}
             <Link href={cfg.createHref}
-              className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition-colors">
-              + Create new
+              className="text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 sm:px-3 py-1.5 rounded-lg transition-colors">
+              + Create
             </Link>
           </div>
         </div>
@@ -150,7 +150,7 @@ export function SeriesAssetTabs({ seriesId, branches, linked, global }: Props) {
                 tab === "promptSeeds" ? `/library/prompt-seeds` : undefined
 
               return (
-                <div key={a.id} className="bg-white/5 border border-white/10 hover:border-white/20 rounded-xl px-4 py-3 flex items-center gap-3 group transition-colors">
+                <div key={a.id} className="bg-white/5 border border-white/10 hover:border-white/20 rounded-xl px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3 group transition-colors min-w-0 overflow-hidden">
                   {detailHref ? (
                     <Link href={detailHref} className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
                       <span className="text-base">{cfg.emoji}</span>
@@ -242,7 +242,7 @@ export function SeriesAssetTabs({ seriesId, branches, linked, global }: Props) {
                   const orphans = allStories.filter((s) => !accounted.has(s.id))
 
                   return (
-                    <div className="mt-4 ml-6 space-y-3">
+                    <div className="mt-4 ml-2 sm:ml-6 space-y-3">
                       {/* Continuation chains */}
                       {chains.map((chain) => (
                         <div key={chain[0].id} className="bg-indigo-500/5 border border-indigo-500/20 rounded-lg p-2">
