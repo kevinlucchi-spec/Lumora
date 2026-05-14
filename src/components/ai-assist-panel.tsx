@@ -101,6 +101,7 @@ export function AiAssistPanel({ assetType, getCurrentValues, onApply, placeholde
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleGenerate() } }}
             placeholder={placeholder ?? "Describe what you want to create..."}
             rows={2}
             maxLength={1000}
