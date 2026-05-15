@@ -37,15 +37,20 @@ export abstract class BaseAIAdapter implements AIProviderAdapter {
   abstract readonly name: string
   abstract readonly supportedCapabilities: AICapability[]
 
-  protected readonly maxRetries = 2
-  protected readonly timeoutMs = 30_000
+  protected readonly maxRetries = 1
+  protected readonly timeoutMs = 25_000
 
   async call<T>(request: AIRequest): Promise<AIResponse<T>> {
     let lastError: Error | undefined
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
         const start = Date.now()
-        const raw = await this.execute(request)
+        const raw = await Promise.race([
+          this.execute(request),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`AI call timed out after ${this.timeoutMs}ms (${this.name}, ${request.capability})`)), this.timeoutMs)
+          ),
+        ])
         let parsed: unknown
         if (request.responseSchema) {
           const jsonStr = extractJson(raw.text)

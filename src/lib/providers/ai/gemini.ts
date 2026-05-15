@@ -116,7 +116,7 @@ async function fetchImageAsBase64(url: string): Promise<{ mimeType: string; data
       return null
     }
 
-    const response = await fetch(url)
+    const response = await fetch(url, { signal: AbortSignal.timeout(10_000) })
     if (!response.ok) return null
     const buffer = Buffer.from(await response.arrayBuffer())
     const mimeType = response.headers.get("content-type") ?? "image/png"

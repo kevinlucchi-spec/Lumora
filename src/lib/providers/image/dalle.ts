@@ -7,7 +7,7 @@ export class DalleAdapter implements ImageProviderAdapter {
   private client: OpenAI
 
   constructor(apiKey: string) {
-    this.client = new OpenAI({ apiKey })
+    this.client = new OpenAI({ apiKey, timeout: 20_000 })
   }
 
   async generate(request: ImageRequest): Promise<ImageResponse> {
@@ -96,7 +96,7 @@ async function fetchImageBuffer(url: string): Promise<Buffer | null> {
       if (match) return Buffer.from(match[1], "base64")
       return null
     }
-    const response = await fetch(url)
+    const response = await fetch(url, { signal: AbortSignal.timeout(10_000) })
     if (!response.ok) return null
     return Buffer.from(await response.arrayBuffer())
   } catch {
