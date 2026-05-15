@@ -52,6 +52,7 @@ const PIPELINE_STEPS: Record<string, { label: string; stage: string }> = {
   "extract-scene-specs":     { label: "Selecting key moments...", stage: "Selecting key moments..." },
   "validate-scenes":         { label: "Validating scenes", stage: "Selecting key moments..." },
   "enrich-image-prompts":    { label: "Preparing illustrations", stage: "Creating illustrations..." },
+  "extract-and-enrich-scenes": { label: "Preparing illustrations...", stage: "Creating illustrations..." },
   "generate-images":         { label: "Creating illustrations...", stage: "Creating illustrations..." },
   "qa-images":               { label: "Checking image quality", stage: "Creating illustrations..." },
   "update-memory":           { label: "Saving progress", stage: "Finalizing your story..." },
@@ -270,7 +271,7 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
   // ── Generation Progress View ──
   if (isGenerating || finalStatus === "failed") {
     const completedCount = new Set(steps.filter((s) => s.status === "completed").map((s) => s.step)).size
-    const totalSteps = generateImages ? 10 : 6
+    const totalSteps = generateImages ? 8 : 5
     // Minimum 3% so bar is never invisible; ramp smoothly
     const rawProgress = (completedCount / totalSteps) * 100
     const progress = Math.min(Math.max(rawProgress, steps.length > 0 ? 5 : 3), 100)

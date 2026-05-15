@@ -9,81 +9,88 @@ export async function persistAllOutputs(ctx: PipelineContext): Promise<PipelineC
 
   const wordCount = storyDraft.pages.reduce((acc, p) => acc + p.text.split(/\s+/).length, 0)
   const readingTimeMin = Math.ceil(wordCount / 200)
-
-  const existingStoryCount = await prisma.story.count({
-    where: { volumeId: normalizedRequest.volumeId },
-  })
-
-  // Use user-provided title if set, otherwise fall back to AI-generated title
   const finalTitle = normalizedRequest.storyTitle?.trim() || storyDraft.title
 
-  const story = await prisma.story.create({
-    data: {
-      volumeId: normalizedRequest.volumeId,
-      title: finalTitle,
-      content: storyDraft.pages,
-      storyType: normalizedRequest.storyType === "continuation" ? "CONTINUATION" : "NEW",
-      mode: normalizedRequest.mode as never,
-      ageBand: normalizedRequest.ageBand as never,
-      parentStoryId: normalizedRequest.parentStoryId ?? null,
-      order: existingStoryCount + 1,
-      readingTimeMin,
-      wordCount,
-    },
-  })
+  // Use a transaction to batch all DB writes into fewer round-trips
+  const story = await prisma.$transaction(async (tx) => {
+    const existingStoryCount = await tx.story.count({
+      where: { volumeId: normalizedRequest.volumeId },
+    })
 
-  // Create scene specs and collect their IDs for linking image assets
-  const sceneSpecMap = new Map<number, string>() // order → sceneSpec ID
-  if (sceneSpecs && sceneSpecs.length > 0) {
-    for (const spec of sceneSpecs) {
-      const created = await prisma.sceneSpec.create({
-        data: {
-          storyId: story.id,
-          order: spec.order,
-          description: spec.description,
-          characters: spec.characters,
-          setting: spec.setting,
-          mood: spec.mood,
-          lighting: spec.lighting,
-          imagePrompt: spec.imagePrompt,
-        },
-      })
-      sceneSpecMap.set(spec.order, created.id)
-    }
-  }
-
-  // Create image assets linked to their scene specs
-  if (imageAssets && imageAssets.length > 0) {
-    for (const asset of imageAssets) {
-      await prisma.imageAsset.create({
-        data: {
-          storyId: story.id,
-          sceneSpecId: sceneSpecMap.get(asset.sceneOrder) ?? null,
-          storageKey: asset.storageKey,
-          url: asset.url,
-          prompt: asset.prompt ?? "",
-          negativePrompt: asset.negativePrompt,
-          provider: asset.provider,
-          model: asset.model,
-          width: 1024,
-          height: 1024,
-          metadata: {},
-        },
-      })
-    }
-  }
-
-  await prisma.generationRun.update({
-    where: { id: runId },
-    data: {
-      storyId: story.id,
-      completedAt: new Date(),
-      finalOutput: {
-        storyId: story.id,
-        title: storyDraft.title,
-        supportingCharacters: (ctx.outline as Record<string, unknown>)?.supportingCharacters ?? [],
+    const s = await tx.story.create({
+      data: {
+        volumeId: normalizedRequest.volumeId,
+        title: finalTitle,
+        content: storyDraft.pages,
+        storyType: normalizedRequest.storyType === "continuation" ? "CONTINUATION" : "NEW",
+        mode: normalizedRequest.mode as never,
+        ageBand: normalizedRequest.ageBand as never,
+        parentStoryId: normalizedRequest.parentStoryId ?? null,
+        order: existingStoryCount + 1,
+        readingTimeMin,
+        wordCount,
       },
-    },
+    })
+
+    // Create scene specs
+    const sceneSpecMap = new Map<number, string>()
+    if (sceneSpecs && sceneSpecs.length > 0) {
+      const created = await Promise.all(
+        sceneSpecs.map((spec) =>
+          tx.sceneSpec.create({
+            data: {
+              storyId: s.id,
+              order: spec.order,
+              description: spec.description,
+              characters: spec.characters,
+              setting: spec.setting,
+              mood: spec.mood,
+              lighting: spec.lighting,
+              imagePrompt: spec.imagePrompt,
+            },
+          })
+        )
+      )
+      created.forEach((c, i) => sceneSpecMap.set(sceneSpecs[i].order, c.id))
+    }
+
+    // Create image assets
+    if (imageAssets && imageAssets.length > 0) {
+      await Promise.all(
+        imageAssets.map((asset) =>
+          tx.imageAsset.create({
+            data: {
+              storyId: s.id,
+              sceneSpecId: sceneSpecMap.get(asset.sceneOrder) ?? null,
+              storageKey: asset.storageKey,
+              url: asset.url,
+              prompt: asset.prompt ?? "",
+              negativePrompt: asset.negativePrompt,
+              provider: asset.provider,
+              model: asset.model,
+              width: 1024,
+              height: 1024,
+              metadata: {},
+            },
+          })
+        )
+      )
+    }
+
+    await tx.generationRun.update({
+      where: { id: runId },
+      data: {
+        storyId: s.id,
+        completedAt: new Date(),
+        finalOutput: {
+          storyId: s.id,
+          title: storyDraft.title,
+          supportingCharacters: (ctx.outline as Record<string, unknown>)?.supportingCharacters ?? [],
+        },
+      },
+    })
+
+    return s
   })
 
   ctx.finalStory = { title: storyDraft.title, content: storyDraft.pages }

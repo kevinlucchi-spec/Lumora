@@ -13,6 +13,7 @@ import { validateContinuity } from "./steps/08b-validate-continuity"
 import { extractSceneSpecs } from "./steps/09-extract-scene-specs"
 import { validateScenes } from "./steps/10-validate-scenes"
 import { enrichImagePrompts } from "./steps/10b-enrich-image-prompts"
+import { extractAndEnrichScenes } from "./steps/09-extract-and-enrich-scenes"
 import { generateImages } from "./steps/11-generate-images"
 import { generateMissingPortraits } from "./steps/11b-generate-portraits"
 import { qaAndRepairImages } from "./steps/12-qa-images"
@@ -86,19 +87,17 @@ const FULL_PIPELINE: PipelineStep[] = [
  * - 12:    Image QA + repair loops (the biggest time sink — 30-60s alone)
  */
 const LEAN_PIPELINE: PipelineStep[] = [
-  normalizeRequest,        // 01: ~0.5s
-  retrieveContext,         // 02: ~0.5s
-  generateOutline,         // 03: ~3-5s (Haiku)
-  generateStoryDraft,      // 06: ~20-25s (Sonnet, 60s timeout)
-  extractSceneSpecs,       // 09: ~5-7s (Gemini)
-  validateScenes,          // 10: ~0s (Zod only)
-  enrichImagePrompts,      // 10b: ~5-7s (Gemini)
-  generateImages,          // 11: ~10-15s (parallel, 3 max)
-  updateMemoryState,       // 13: ~1s
-  persistAllOutputs,       // 14: ~1s
+  normalizeRequest,          // 01: ~0.5s
+  retrieveContext,           // 02: ~0.5s
+  generateOutline,           // 03: ~3-5s (Haiku)
+  generateStoryDraft,        // 06: ~20-25s (Sonnet)
+  extractAndEnrichScenes,    // 09+10b: ~7-10s (single Gemini call, saves ~5-7s)
+  generateImages,            // 11: ~10-15s (parallel, 3 max)
+  updateMemoryState,         // 13: ~1s
+  persistAllOutputs,         // 14: ~1-2s (batched transaction)
 ]
-// Estimated total: ~50-65s — well within 300s Pro budget
-// Skipped vs full: validation/repair (4-5, 7-8, 8b), portraits (11b), image QA (12)
+// Target: ~45-55s
+// vs old: saves ~12s (outline Haiku) + ~5-7s (combined Gemini) + ~9s (batched persist)
 
 function selectPipeline(): PipelineStep[] {
   // Use lean pipeline on Vercel (serverless) or when explicitly set

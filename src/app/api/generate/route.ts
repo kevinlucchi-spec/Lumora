@@ -5,8 +5,8 @@ import { StoryGenerationRequestSchema } from "@/lib/schemas/request"
 import { prisma } from "@/lib/prisma"
 import { runStoryPipeline } from "@/lib/pipeline"
 
-// Vercel Pro allows up to 300s
-export const maxDuration = 300
+// Target ~45-55s pipeline, 120s ceiling for retries/slow networks
+export const maxDuration = 120
 
 export async function POST(req: Request) {
   const session = await auth()
