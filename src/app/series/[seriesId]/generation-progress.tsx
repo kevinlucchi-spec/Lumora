@@ -25,6 +25,7 @@ const STEP_LABELS: Record<string, string> = {
   "extract-scene-specs": "Extracting scenes",
   "validate-scenes": "Validating scenes",
   "enrich-image-prompts": "Preparing images",
+  "extract-and-enrich-scenes": "Preparing illustrations",
   "generate-images": "Generating images",
   "generate-portraits": "Generating portraits",
   "qa-images": "Checking images",
@@ -68,7 +69,7 @@ export function GenerationProgress({ seriesId }: Props) {
         const lastStep = run.steps[run.steps.length - 1]
         const stepLabel = lastStep ? (STEP_LABELS[lastStep.step] ?? lastStep.step) : "Starting..."
         const completedSteps = run.steps.filter((s) => s.status === "completed").length
-        const progress = Math.max(5, (completedSteps / 14) * 100)
+        const progress = Math.max(5, (completedSteps / 8) * 100)
 
         return (
           <div key={run.runId} className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-5 py-4">
