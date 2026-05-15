@@ -1,8 +1,12 @@
 // @ts-nocheck
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { auth } from "@/lib/auth"
-import { enqueueStoryGeneration } from "@/lib/services/generation.service"
 import { StoryGenerationRequestSchema } from "@/lib/schemas/request"
+import { prisma } from "@/lib/prisma"
+import { runStoryPipeline } from "@/lib/pipeline"
+
+// Vercel Hobby max — keep function alive for up to 60s
+export const maxDuration = 60
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -10,6 +14,28 @@ export async function POST(req: Request) {
   const body = await req.json()
   const parsed = StoryGenerationRequestSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
-  const run = await enqueueStoryGeneration(session.user.id, parsed.data)
+
+  const run = await prisma.generationRun.create({
+    data: {
+      userId: session.user.id,
+      status: "PENDING",
+      requestPayload: parsed.data,
+    },
+  })
+
+  // Run the pipeline after sending the 202 response.
+  // next/server `after()` keeps the function alive on Vercel.
+  after(async () => {
+    try {
+      await runStoryPipeline(parsed.data, run.id, session.user.id)
+    } catch (err) {
+      console.error(`[generate] Pipeline failed for run ${run.id}:`, err)
+      await prisma.generationRun.update({
+        where: { id: run.id },
+        data: { status: "FAILED", errors: [{ step: "pipeline", critical: true, message: (err as Error).message }] },
+      }).catch(() => {})
+    }
+  })
+
   return NextResponse.json({ runId: run.id }, { status: 202 })
 }

@@ -35,97 +35,107 @@ async function getPortraitUrls(ctx: PipelineContext): Promise<string[]> {
   return urls
 }
 
+/** Generate a single image and upload to R2 */
+async function generateSingleImage(
+  scene: { order: number; imagePrompt?: string; description: string },
+  enrichedPrompt: string | undefined,
+  negativePrompt: string | undefined,
+  portraitUrls: string[],
+  runId: string,
+  ctx: PipelineContext,
+) {
+  const imageProvider = getImageProvider()
+  const prompt = enrichedPrompt ?? scene.imagePrompt ?? scene.description
+
+  const result = await imageProvider.generate({
+    prompt,
+    negativePrompt,
+    referenceImageUrls: portraitUrls.length > 0 ? portraitUrls : undefined,
+    metadata: { sceneOrder: scene.order },
+  })
+
+  let finalUrl = result.url
+  let finalStorageKey = result.storageKey
+
+  if (R2_CONFIGURED && result.url) {
+    const storageKey = `stories/${runId}/scene-${scene.order}-${Date.now()}.png`
+    try {
+      await downloadAndUpload(result.url, storageKey)
+      finalStorageKey = storageKey
+      finalUrl = storageKey
+    } catch {
+      // Fall back to ephemeral URL
+      ctx.errors.push({
+        step: "generate-images",
+        critical: false,
+        message: `R2 upload failed for scene ${scene.order}. Using ephemeral URL.`,
+      })
+    }
+  }
+
+  return {
+    sceneOrder: scene.order,
+    storageKey: finalStorageKey,
+    url: finalUrl,
+    prompt,
+    negativePrompt,
+    provider: result.provider,
+    model: result.model,
+  }
+}
+
 export async function generateImages(ctx: PipelineContext): Promise<PipelineContext> {
   if (!ctx.sceneSpecs || ctx.sceneSpecs.length === 0) {
     ctx.log.push({ step: "generate-images", status: "skipped" })
     return ctx
   }
 
+  const start = Date.now()
   const length = ctx.normalizedRequest?.length ?? ctx.request.length
-  const maxImages = IMAGE_CAP_MAP[length] ?? 4
+  const maxImages = Math.min(IMAGE_CAP_MAP[length] ?? 4, 3) // Cap at 3 for speed
 
-  // Fetch portrait URLs once for all scenes
   const portraitUrls = await getPortraitUrls(ctx)
-
-  const imageProvider = getImageProvider()
-  const imageAssets = []
   const enrichedMap = new Map(
     (ctx._enrichedPrompts ?? []).map((ep) => [ep.order, ep]),
   )
 
-  let generatedCount = 0
-  for (const scene of ctx.sceneSpecs) {
-    if (!scene.warrantsIllustration) continue
-    if (generatedCount >= maxImages) break
+  // Select scenes to illustrate
+  const scenesToIllustrate = ctx.sceneSpecs
+    .filter((s) => s.warrantsIllustration)
+    .slice(0, maxImages)
 
-    const enriched = enrichedMap.get(scene.order)
-    const prompt = enriched?.enrichedPrompt ?? scene.imagePrompt ?? scene.description
-    const negativePrompt = enriched?.negativePrompt
+  // Generate all images in parallel
+  const results = await Promise.allSettled(
+    scenesToIllustrate.map((scene) => {
+      const enriched = enrichedMap.get(scene.order)
+      return generateSingleImage(
+        scene,
+        enriched?.enrichedPrompt,
+        enriched?.negativePrompt,
+        portraitUrls,
+        ctx.runId,
+        ctx,
+      )
+    })
+  )
 
-    try {
-      const result = await imageProvider.generate({
-        prompt,
-        negativePrompt,
-        referenceImageUrls: portraitUrls.length > 0 ? portraitUrls : undefined,
-        metadata: { sceneOrder: scene.order },
-      })
-
-      let finalUrl = result.url
-      let finalStorageKey = result.storageKey
-
-      // Persist to R2 if configured (DALL-E URLs are ephemeral)
-      if (R2_CONFIGURED && result.url) {
-        const storageKey = `stories/${ctx.runId}/scene-${scene.order}-${Date.now()}.png`
-        try {
-          await downloadAndUpload(result.url, storageKey)
-          finalStorageKey = storageKey
-          finalUrl = storageKey
-        } catch (uploadErr) {
-          // First attempt failed — retry once after a short delay
-          ctx.errors.push({
-            step: "generate-images",
-            critical: false,
-            message: `R2 upload attempt 1 failed for scene ${scene.order}: ${(uploadErr as Error).message}`,
-          })
-          try {
-            await new Promise((r) => setTimeout(r, 2000))
-            await downloadAndUpload(result.url, storageKey)
-            finalStorageKey = storageKey
-            finalUrl = storageKey
-          } catch {
-            // Fall back to ephemeral URL — it will expire
-            ctx.errors.push({
-              step: "generate-images",
-              critical: false,
-              message: `R2 upload retry failed for scene ${scene.order}. Using ephemeral URL (will expire in ~1hr).`,
-            })
-          }
-        }
-      }
-
-      imageAssets.push({
-        sceneOrder: scene.order,
-        storageKey: finalStorageKey,
-        url: finalUrl,
-        prompt,
-        negativePrompt,
-        provider: result.provider,
-        model: result.model,
-      })
-      generatedCount++
-    } catch (err) {
+  const imageAssets = []
+  for (const result of results) {
+    if (result.status === "fulfilled") {
+      imageAssets.push(result.value)
+    } else {
       ctx.errors.push({
         step: "generate-images",
         critical: false,
-        message: `Image generation failed for scene ${scene.order}: ${(err as Error).message}`,
+        message: `Image generation failed: ${result.reason?.message ?? "unknown error"}`,
       })
     }
   }
 
   ctx.imageAssets = imageAssets
-  if (imageAssets.length < ctx.sceneSpecs.filter((s) => s.warrantsIllustration).length) {
+  if (imageAssets.length < scenesToIllustrate.length) {
     ctx.status = "partial"
   }
-  ctx.log.push({ step: "generate-images", status: "completed" })
+  ctx.log.push({ step: "generate-images", status: "completed", durationMs: Date.now() - start })
   return ctx
 }

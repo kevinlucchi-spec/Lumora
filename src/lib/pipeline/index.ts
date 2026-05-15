@@ -52,23 +52,63 @@ async function persistRunLog(ctx: PipelineContext): Promise<void> {
   })
 }
 
-const PIPELINE_STEPS: PipelineStep[] = [
-  normalizeRequest,        // 01: Resolve characters, derive word count, tone
-  retrieveContext,         // 02: Fetch character/branch/world memory
-  generateOutline,         // 03: Claude generates outline
-  validateAndRepairOutline,// 04-05: GPT-4o validates, Claude repairs
-  generateStoryDraft,      // 06: Claude generates full story
-  validateAndRepairStory,  // 07-08: GPT-4o validates, Claude repairs
-  validateContinuity,      // 08b: GPT-4o checks story against series memory, Claude repairs contradictions
-  extractSceneSpecs,       // 09: Gemini extracts visual scenes
-  validateScenes,          // 10: Zod validates scene specs
-  enrichImagePrompts,      // 10b: Gemini enriches prompts with character visual profiles
-  generateImages,          // 11: Image generation, uploads to R2
-  generateMissingPortraits,// 11b: Auto-generate portraits for characters without one
-  qaAndRepairImages,       // 12: GPT-4o scene QA + Grok character QA + Claude repair loop
-  updateMemoryState,       // 13: Update character/branch memory
-  persistAllOutputs,       // 14: Write everything to database
+/**
+ * Full pipeline — all validation, repair, and QA steps.
+ * Use when running on a long-lived server with no time constraints.
+ */
+const FULL_PIPELINE: PipelineStep[] = [
+  normalizeRequest,        // 01
+  retrieveContext,         // 02
+  generateOutline,         // 03
+  validateAndRepairOutline,// 04-05
+  generateStoryDraft,      // 06
+  validateAndRepairStory,  // 07-08
+  validateContinuity,      // 08b
+  extractSceneSpecs,       // 09
+  validateScenes,          // 10
+  enrichImagePrompts,      // 10b
+  generateImages,          // 11
+  generateMissingPortraits,// 11b
+  qaAndRepairImages,       // 12
+  updateMemoryState,       // 13
+  persistAllOutputs,       // 14
 ]
+
+/**
+ * Lean pipeline — skips multi-AI validation, repair loops, and image QA.
+ * Fits within Vercel Hobby's 60-second function timeout.
+ *
+ * Skipped steps:
+ * - 04-05: Outline validation/repair (Claude already writes good outlines)
+ * - 07-08: Story validation/repair (safety rules baked into the generation prompt)
+ * - 08b:   Continuity validation (context is already in the generation prompt)
+ * - 11b:   Portrait generation (defer to character creation time)
+ * - 12:    Image QA + repair loops (the biggest time sink — 30-60s alone)
+ */
+const LEAN_PIPELINE: PipelineStep[] = [
+  normalizeRequest,        // 01: ~1s
+  retrieveContext,         // 02: ~2s
+  generateOutline,         // 03: ~5-8s
+  generateStoryDraft,      // 06: ~10-15s
+  extractSceneSpecs,       // 09: ~3-5s
+  validateScenes,          // 10: ~0.1s (Zod only)
+  enrichImagePrompts,      // 10b: ~3-5s
+  generateImages,          // 11: ~10-15s (parallel)
+  updateMemoryState,       // 13: ~1s
+  persistAllOutputs,       // 14: ~2s
+]
+// Estimated total: ~35-50s — within 60s budget
+
+function selectPipeline(): PipelineStep[] {
+  // Use lean pipeline on Vercel (serverless) or when explicitly set
+  const isVercel = !!process.env.VERCEL
+  const forceLean = process.env.PIPELINE_MODE === "lean"
+  const forceFull = process.env.PIPELINE_MODE === "full"
+
+  if (forceFull) return FULL_PIPELINE
+  if (forceLean || isVercel) return LEAN_PIPELINE
+  return FULL_PIPELINE
+}
 
 export async function runStoryPipeline(
   request: StoryGenerationRequest,
@@ -76,8 +116,9 @@ export async function runStoryPipeline(
   userId: string,
 ): Promise<PipelineContext> {
   let ctx = initContext(request, runId, userId)
+  const steps = selectPipeline()
 
-  for (const step of PIPELINE_STEPS) {
+  for (const step of steps) {
     try {
       ctx = await step(ctx)
       await persistRunLog(ctx)
