@@ -4,14 +4,28 @@ import type { PipelineContext, StoryDraft } from "../types"
 import type { ContextPack } from "@/lib/memory/types"
 import { z } from "zod"
 
+const PageSchema = z.object({
+  pageNumber: z.number().optional(),
+  page_number: z.number().optional(),
+  text: z.string().optional(),
+  content: z.string().optional(),
+  sceneHint: z.string().optional(),
+}).transform((p) => ({
+  pageNumber: p.pageNumber ?? p.page_number ?? 0,
+  text: p.text ?? p.content ?? "",
+  sceneHint: p.sceneHint,
+}))
+
 const StoryDraftSchema = z.object({
   title: z.string(),
-  pages: z.array(z.object({
-    pageNumber: z.number(),
-    text: z.string(),
-    sceneHint: z.string().optional(),
-  })),
-})
+  pages: z.array(PageSchema),
+}).transform((d) => ({
+  title: d.title,
+  pages: d.pages.map((p, i) => ({
+    ...p,
+    pageNumber: p.pageNumber || i + 1,
+  })).filter((p) => p.text.length > 0),
+}))
 
 export async function generateStoryDraft(ctx: PipelineContext): Promise<PipelineContext> {
   const start = Date.now()
@@ -57,7 +71,9 @@ WRITING RULES:
 - Write like the 5th book in a series, not the 1st. Trust the reader.
 - Focus on story, dialogue, emotion, and sensory detail — not character introductions.
 
-Return ONLY valid JSON with title and pages array.`,
+Return ONLY valid JSON (no markdown fences) with this EXACT structure:
+{ "title": "Story Title", "pages": [{ "pageNumber": 1, "text": "Page text here..." }, ...] }
+Every page MUST have "pageNumber" (number) and "text" (string).`,
     userPrompt: `Write the story based on this outline:\n${JSON.stringify(outline, null, 2)}`,
     responseSchema: StoryDraftSchema,
     temperature: 0.85,

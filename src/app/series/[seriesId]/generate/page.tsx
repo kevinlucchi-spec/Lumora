@@ -81,11 +81,32 @@ export default async function GenerateStoryPage({
     }
   }
 
-  // Check if parent story had images
+  // Load parent story settings for defaults
   let parentHadImages = false
+  let lastStorySettings: { ageBand?: string; mode?: string; length?: string; generateImages?: boolean } = {}
   if (parentStoryId) {
     const imageCount = await prisma.imageAsset.count({ where: { storyId: parentStoryId } })
     parentHadImages = imageCount > 0
+  }
+
+  // Get the most recent story's generation settings as defaults
+  const lastRun = await prisma.generationRun.findFirst({
+    where: {
+      userId,
+      status: { in: ["COMPLETED", "PARTIAL"] },
+      requestPayload: { not: undefined },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { requestPayload: true },
+  })
+  if (lastRun?.requestPayload) {
+    const p = lastRun.requestPayload as Record<string, unknown>
+    lastStorySettings = {
+      ageBand: p.ageBand as string | undefined,
+      mode: p.mode as string | undefined,
+      length: p.length as string | undefined,
+      generateImages: p.generateImages as boolean | undefined,
+    }
   }
 
   // Find default art style from character portraits
@@ -150,6 +171,10 @@ export default async function GenerateStoryPage({
           inheritedCharacterIds={inheritedCharacterIds}
           parentHadImages={parentHadImages}
           defaultArtStyle={defaultArtStyle}
+          defaultAgeBand={lastStorySettings.ageBand}
+          defaultMode={lastStorySettings.mode}
+          defaultLength={lastStorySettings.length}
+          defaultGenerateImages={lastStorySettings.generateImages}
         />
       </div>
     </AppShell>

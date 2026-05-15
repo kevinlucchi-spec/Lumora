@@ -86,11 +86,15 @@ interface Props {
   inheritedCharacterIds?: string[]
   parentHadImages?: boolean
   defaultArtStyle?: string
+  defaultAgeBand?: string
+  defaultMode?: string
+  defaultLength?: string
+  defaultGenerateImages?: boolean
 }
 
 type InputMode = "auto" | "library" | "custom"
 
-export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, worlds, artStyles, promptSeeds, existingStories = [], initialParentStoryId, inheritedCharacterIds = [], parentHadImages = false, defaultArtStyle = "" }: Props) {
+export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, worlds, artStyles, promptSeeds, existingStories = [], initialParentStoryId, inheritedCharacterIds = [], parentHadImages = false, defaultArtStyle = "", defaultAgeBand, defaultMode, defaultLength, defaultGenerateImages }: Props) {
   const router = useRouter()
 
   // Story type
@@ -98,9 +102,9 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
   const [parentStoryId, setParentStoryId] = useState(initialParentStoryId ?? "")
 
   // Core selections
-  const [storyMode, setStoryMode] = useState<string>("CALM_BEDTIME")
-  const [ageBand, setAgeBand] = useState<string>("EARLY")
-  const [length, setLength] = useState<string>("quick")
+  const [storyMode, setStoryMode] = useState<string>(defaultMode ?? "CALM_BEDTIME")
+  const [ageBand, setAgeBand] = useState<string>(defaultAgeBand ?? "EARLY")
+  const [length, setLength] = useState<string>(defaultLength ?? "quick")
   const [selectedCharacters, setSelectedCharacters] = useState<string[]>(
     inheritedCharacterIds.length > 0
       ? inheritedCharacterIds
@@ -110,7 +114,7 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
   )
   const [lockedCharacterIds] = useState<Set<string>>(new Set(inheritedCharacterIds))
   const [storyTitle, setStoryTitle] = useState("")
-  const [generateImages, setGenerateImages] = useState(parentHadImages)
+  const [generateImages, setGenerateImages] = useState(defaultGenerateImages ?? parentHadImages)
 
   // Supporting characters
   const [supportingMode, setSupportingMode] = useState<string>("auto")
