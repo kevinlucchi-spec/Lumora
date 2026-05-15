@@ -38,17 +38,21 @@ export abstract class BaseAIAdapter implements AIProviderAdapter {
   abstract readonly supportedCapabilities: AICapability[]
 
   protected readonly maxRetries = 1
-  protected readonly timeoutMs = 25_000
+  protected readonly timeoutMs = 20_000
+  // Longer timeout for heavy generation tasks
+  protected readonly longTimeoutMs = 40_000
+  private readonly longTimeoutCapabilities = ["generate:story-draft"]
 
   async call<T>(request: AIRequest): Promise<AIResponse<T>> {
     let lastError: Error | undefined
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
         const start = Date.now()
+        const timeout = this.longTimeoutCapabilities.includes(request.capability) ? this.longTimeoutMs : this.timeoutMs
         const raw = await Promise.race([
           this.execute(request),
           new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error(`AI call timed out after ${this.timeoutMs}ms (${this.name}, ${request.capability})`)), this.timeoutMs)
+            setTimeout(() => reject(new Error(`AI call timed out after ${timeout}ms (${this.name}, ${request.capability})`)), timeout)
           ),
         ])
         let parsed: unknown

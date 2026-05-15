@@ -17,7 +17,7 @@ export type AICapability =
   | "generate:story-variant"
 
 export const CAPABILITY_REGISTRY: Record<AICapability, ProviderConfig> = {
-  "generate:outline":              { provider: "anthropic", model: "claude-sonnet-4-6" },
+  "generate:outline":              { provider: "anthropic", model: "claude-haiku-4-5-20251001" },
   "generate:story-draft":          { provider: "anthropic", model: "claude-sonnet-4-6" },
   "generate:repair-plan":          { provider: "anthropic", model: "claude-haiku-4-5-20251001" },
   "generate:image-prompt-repair":  { provider: "anthropic", model: "claude-haiku-4-5-20251001" },
