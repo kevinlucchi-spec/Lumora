@@ -38,9 +38,29 @@ const ENRICHED_PROMPTS_SCHEMA = {
   },
 }
 
+const ENRICHED_SCENE_SCHEMA = {
+  type: SchemaType.ARRAY,
+  items: {
+    type: SchemaType.OBJECT,
+    properties: {
+      order: { type: SchemaType.NUMBER, description: "Scene order starting from 0" },
+      description: { type: SchemaType.STRING, description: "What happens in this scene" },
+      characters: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "Character names in this scene" },
+      setting: { type: SchemaType.STRING, description: "Where the scene takes place" },
+      mood: { type: SchemaType.STRING, description: "Emotional tone" },
+      lighting: { type: SchemaType.STRING, description: "Lighting description" },
+      warrantsIllustration: { type: SchemaType.BOOLEAN, description: "Whether this scene should be illustrated" },
+      enrichedPrompt: { type: SchemaType.STRING, description: "Detailed 100-200 word image generation prompt with art style, composition, lighting, and character visual details" },
+      negativePrompt: { type: SchemaType.STRING, description: "Things to avoid in the image" },
+    },
+    required: ["order", "description", "characters", "setting", "mood", "enrichedPrompt"],
+  },
+}
+
 const CAPABILITY_SCHEMAS: Partial<Record<AICapability, unknown>> = {
   "extract:scene-specs": SCENE_SPEC_SCHEMA,
   "generate:image-prompt-pack": ENRICHED_PROMPTS_SCHEMA,
+  "extract:enriched-scenes": ENRICHED_SCENE_SCHEMA,
 }
 
 export class GeminiAdapter extends BaseAIAdapter {
@@ -48,6 +68,7 @@ export class GeminiAdapter extends BaseAIAdapter {
   readonly supportedCapabilities: AICapability[] = [
     "extract:scene-specs",
     "generate:image-prompt-pack",
+    "extract:enriched-scenes",
   ]
 
   private client: GoogleGenerativeAI

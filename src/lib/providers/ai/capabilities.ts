@@ -11,6 +11,7 @@ export type AICapability =
   | "validate:continuity"
   | "extract:scene-specs"
   | "generate:image-prompt-pack"
+  | "extract:enriched-scenes"
   | "qa:image-scene"
   | "qa:image-character"
   | "rank:candidates"
@@ -26,6 +27,7 @@ export const CAPABILITY_REGISTRY: Record<AICapability, ProviderConfig> = {
   "validate:continuity":           { provider: "openai",    model: "gpt-4o" },
   "extract:scene-specs":           { provider: "gemini",    model: "gemini-2.5-flash" },
   "generate:image-prompt-pack":    { provider: "gemini",    model: "gemini-2.5-flash" },
+  "extract:enriched-scenes":       { provider: "gemini",    model: "gemini-2.5-flash" },
   "qa:image-scene":                { provider: "openai",    model: "gpt-4o" },
   "qa:image-character":            { provider: "xai",       model: "grok-2-1212" },
   "rank:candidates":               { provider: "xai",       model: "grok-2-1212" },

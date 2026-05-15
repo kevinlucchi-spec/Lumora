@@ -7,7 +7,7 @@ export class DalleAdapter implements ImageProviderAdapter {
   private client: OpenAI
 
   constructor(apiKey: string) {
-    this.client = new OpenAI({ apiKey, timeout: 20_000 })
+    this.client = new OpenAI({ apiKey, timeout: 60_000 })
   }
 
   async generate(request: ImageRequest): Promise<ImageResponse> {

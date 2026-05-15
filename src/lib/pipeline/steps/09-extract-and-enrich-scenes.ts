@@ -80,7 +80,7 @@ export async function extractAndEnrichScenes(ctx: PipelineContext): Promise<Pipe
   try {
     const router = getAIRouter()
     const response = await router.call({
-      capability: "extract:scene-specs",
+      capability: "extract:enriched-scenes",
       systemPrompt: `You are a visual director for children's picture books. Your job is to:
 1. Extract key visual moments from the story as scene specifications
 2. Write rich, detailed image generation prompts for each scene
