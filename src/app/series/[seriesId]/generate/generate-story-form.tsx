@@ -508,60 +508,6 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
         )}
       </Section>
 
-      {/* ── Art Style ── */}
-      <Section title="Art style">
-        <div className="flex flex-wrap gap-2">
-          {ART_STYLE_PRESETS.map((preset) => (
-            <button key={preset.value} type="button"
-              onClick={() => {
-                if (customArtStyle === preset.value) {
-                  setCustomArtStyle("")
-                  setArtStyleInputMode("auto")
-                } else {
-                  setCustomArtStyle(preset.value)
-                  setArtStyleInputMode("custom")
-                }
-              }}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                customArtStyle === preset.value
-                  ? "bg-indigo-600 border-indigo-500 text-white"
-                  : "bg-white/5 border-white/10 text-white/50 hover:text-white/70 hover:border-white/20"
-              }`}>
-              {preset.label}
-            </button>
-          ))}
-        </div>
-        <input type="text" value={customArtStyle} onChange={(e) => { setCustomArtStyle(e.target.value); setArtStyleInputMode(e.target.value ? "custom" : "auto") }}
-          placeholder="Or describe your own style..."
-          maxLength={500}
-          className="mt-3 w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/25 text-sm focus:outline-none focus:border-indigo-500 transition-colors" />
-        {artStyleInputMode === "auto" && !customArtStyle && (
-          <p className="text-xs text-white/30 mt-1.5">No style selected — AI will choose one that matches the tone.</p>
-        )}
-        {artStyles.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/5">
-            <p className="text-xs text-white/30 mb-2">From your library:</p>
-            <div className="flex flex-wrap gap-2">
-              {artStyles.map((s) => (
-                <button key={s.id} type="button"
-                  onClick={() => {
-                    setSelectedArtStyle(s.id)
-                    setArtStyleInputMode("library")
-                    setCustomArtStyle("")
-                  }}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    artStyleInputMode === "library" && selectedArtStyle === s.id
-                      ? "bg-indigo-600 border-indigo-500 text-white"
-                      : "bg-white/5 border-white/10 text-white/50 hover:text-white/70 hover:border-white/20"
-                  }`}>
-                  {s.name}{s.medium ? ` (${s.medium})` : ""}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </Section>
-
       {/* ── Story Mode ── */}
       <Section title="Story mode">
         <div className="grid grid-cols-1 gap-2">
@@ -610,6 +556,62 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
           <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${generateImages ? "left-[22px]" : "left-0.5"}`} />
         </button>
       </div>
+
+      {/* ── Art Style (only when generating images) ── */}
+      {generateImages && (
+        <Section title="Art style">
+          <div className="flex flex-wrap gap-2">
+            {ART_STYLE_PRESETS.map((preset) => (
+              <button key={preset.value} type="button"
+                onClick={() => {
+                  if (customArtStyle === preset.value) {
+                    setCustomArtStyle("")
+                    setArtStyleInputMode("auto")
+                  } else {
+                    setCustomArtStyle(preset.value)
+                    setArtStyleInputMode("custom")
+                  }
+                }}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                  customArtStyle === preset.value
+                    ? "bg-indigo-600 border-indigo-500 text-white"
+                    : "bg-white/5 border-white/10 text-white/50 hover:text-white/70 hover:border-white/20"
+                }`}>
+                {preset.label}
+              </button>
+            ))}
+          </div>
+          <input type="text" value={customArtStyle} onChange={(e) => { setCustomArtStyle(e.target.value); setArtStyleInputMode(e.target.value ? "custom" : "auto") }}
+            placeholder="Or describe your own style..."
+            maxLength={500}
+            className="mt-3 w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/25 text-sm focus:outline-none focus:border-indigo-500 transition-colors" />
+          {artStyleInputMode === "auto" && !customArtStyle && (
+            <p className="text-xs text-white/30 mt-1.5">No style selected — AI will choose one that matches the tone.</p>
+          )}
+          {artStyles.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-white/5">
+              <p className="text-xs text-white/30 mb-2">From your library:</p>
+              <div className="flex flex-wrap gap-2">
+                {artStyles.map((s) => (
+                  <button key={s.id} type="button"
+                    onClick={() => {
+                      setSelectedArtStyle(s.id)
+                      setArtStyleInputMode("library")
+                      setCustomArtStyle("")
+                    }}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                      artStyleInputMode === "library" && selectedArtStyle === s.id
+                        ? "bg-indigo-600 border-indigo-500 text-white"
+                        : "bg-white/5 border-white/10 text-white/50 hover:text-white/70 hover:border-white/20"
+                    }`}>
+                    {s.name}{s.medium ? ` (${s.medium})` : ""}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </Section>
+      )}
 
       {error && <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">{error}</div>}
 

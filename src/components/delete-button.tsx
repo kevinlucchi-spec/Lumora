@@ -10,9 +10,11 @@ interface Props {
   entityName: string
   /** Soft-delete API endpoint (DELETE method) */
   archiveEndpoint: string
+  /** Called after successful deletion — use to update local state */
+  onDeleted?: () => void
 }
 
-export function DeleteButton({ entityType, entityId, entityName, archiveEndpoint }: Props) {
+export function DeleteButton({ entityType, entityId, entityName, archiveEndpoint, onDeleted }: Props) {
   const router = useRouter()
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -48,7 +50,11 @@ export function DeleteButton({ entityType, entityId, entityName, archiveEndpoint
 
     setLoading(false)
     setConfirming(false)
-    router.refresh()
+    if (onDeleted) {
+      onDeleted()
+    } else {
+      router.refresh()
+    }
   }
 
   if (confirming) {

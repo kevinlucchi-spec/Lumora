@@ -170,7 +170,7 @@ export default function PromptSeedsPage() {
               <div key={s.id} className="bg-white/5 border border-white/10 rounded-xl p-5">
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-medium text-sm">{s.name}</p>
-                  <DeleteButton entityType="storyPromptSeed" entityId={s.id} entityName={s.name} archiveEndpoint={`/api/library/prompt-seeds/${s.id}`} />
+                  <DeleteButton entityType="storyPromptSeed" entityId={s.id} entityName={s.name} archiveEndpoint={`/api/library/prompt-seeds/${s.id}`} onDeleted={() => setSeeds((prev) => prev.filter((x) => x.id !== s.id))} />
                 </div>
                 <p className="text-xs text-white/50 mt-2 line-clamp-3">{s.prompt}</p>
                 <div className="flex flex-wrap gap-1 mt-3">

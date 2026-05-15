@@ -166,7 +166,7 @@ export default function ArtStylesPage() {
               <div key={s.id} className="bg-white/5 border border-white/10 rounded-xl p-5 group">
                 <div className="flex items-start justify-between gap-3">
                   <div className="w-9 h-9 rounded-lg bg-pink-500/20 flex items-center justify-center text-base shrink-0">🎨</div>
-                  <DeleteButton entityType="artStylePreset" entityId={s.id} entityName={s.name} archiveEndpoint={`/api/library/art-styles/${s.id}`} />
+                  <DeleteButton entityType="artStylePreset" entityId={s.id} entityName={s.name} archiveEndpoint={`/api/library/art-styles/${s.id}`} onDeleted={() => setStyles((prev) => prev.filter((x) => x.id !== s.id))} />
                 </div>
                 <p className="font-medium text-sm mt-3 mb-1">{s.name}</p>
                 {s.description && <p className="text-xs text-white/40 line-clamp-2">{s.description}</p>}

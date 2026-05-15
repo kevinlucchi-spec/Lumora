@@ -164,7 +164,7 @@ export default function WorldsPage() {
               <div key={w.id} className="bg-white/5 border border-white/10 rounded-xl p-5 group">
                 <div className="flex items-start justify-between gap-3">
                   <div className="w-9 h-9 rounded-lg bg-emerald-500/20 flex items-center justify-center text-base shrink-0">🌍</div>
-                  <DeleteButton entityType="worldTemplate" entityId={w.id} entityName={w.name} archiveEndpoint={`/api/library/worlds/${w.id}`} />
+                  <DeleteButton entityType="worldTemplate" entityId={w.id} entityName={w.name} archiveEndpoint={`/api/library/worlds/${w.id}`} onDeleted={() => setWorlds((prev) => prev.filter((x) => x.id !== w.id))} />
                 </div>
                 <p className="font-medium text-sm mt-3 mb-1">{w.name}</p>
                 {w.description && <p className="text-xs text-white/40 line-clamp-2">{w.description}</p>}
