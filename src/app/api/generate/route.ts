@@ -5,8 +5,8 @@ import { StoryGenerationRequestSchema } from "@/lib/schemas/request"
 import { prisma } from "@/lib/prisma"
 import { runStoryPipeline } from "@/lib/pipeline"
 
-// Vercel Hobby max — keep function alive for up to 60s
-export const maxDuration = 60
+// Vercel Pro allows up to 300s
+export const maxDuration = 300
 
 export async function POST(req: Request) {
   const session = await auth()

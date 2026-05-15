@@ -270,7 +270,7 @@ export function GenerateStoryForm({ seriesId, branchId, volumeId, characters, wo
   // ── Generation Progress View ──
   if (isGenerating || finalStatus === "failed") {
     const completedCount = new Set(steps.filter((s) => s.status === "completed").map((s) => s.step)).size
-    const totalSteps = generateImages ? 9 : 6
+    const totalSteps = generateImages ? 10 : 6
     // Minimum 3% so bar is never invisible; ramp smoothly
     const rawProgress = (completedCount / totalSteps) * 100
     const progress = Math.min(Math.max(rawProgress, steps.length > 0 ? 5 : 3), 100)

@@ -89,15 +89,16 @@ const LEAN_PIPELINE: PipelineStep[] = [
   normalizeRequest,        // 01: ~0.5s
   retrieveContext,         // 02: ~0.5s
   generateOutline,         // 03: ~3-5s (Haiku)
-  generateStoryDraft,      // 06: ~20-25s (Sonnet, 40s timeout)
+  generateStoryDraft,      // 06: ~20-25s (Sonnet, 60s timeout)
   extractSceneSpecs,       // 09: ~5-7s (Gemini)
   validateScenes,          // 10: ~0s (Zod only)
+  enrichImagePrompts,      // 10b: ~5-7s (Gemini)
   generateImages,          // 11: ~10-15s (parallel, 3 max)
   updateMemoryState,       // 13: ~1s
   persistAllOutputs,       // 14: ~1s
 ]
-// Estimated total: ~40-55s — within 60s budget
-// Skipped: enrichImagePrompts (saves 6s, fallback prompts from scene specs suffice)
+// Estimated total: ~50-65s — well within 300s Pro budget
+// Skipped vs full: validation/repair (4-5, 7-8, 8b), portraits (11b), image QA (12)
 
 function selectPipeline(): PipelineStep[] {
   // Use lean pipeline on Vercel (serverless) or when explicitly set

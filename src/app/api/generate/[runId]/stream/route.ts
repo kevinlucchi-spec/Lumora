@@ -2,8 +2,8 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-// Keep the stream alive as long as possible on Vercel Hobby
-export const maxDuration = 60
+// Keep the stream alive long enough for pipeline to complete
+export const maxDuration = 300
 
 /**
  * SSE endpoint that streams pipeline progress for a generation run.

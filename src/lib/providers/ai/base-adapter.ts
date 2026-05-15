@@ -37,10 +37,10 @@ export abstract class BaseAIAdapter implements AIProviderAdapter {
   abstract readonly name: string
   abstract readonly supportedCapabilities: AICapability[]
 
-  protected readonly maxRetries = 1
-  protected readonly timeoutMs = 20_000
+  protected readonly maxRetries = 2
+  protected readonly timeoutMs = 30_000
   // Longer timeout for heavy generation tasks
-  protected readonly longTimeoutMs = 40_000
+  protected readonly longTimeoutMs = 60_000
   private readonly longTimeoutCapabilities = ["generate:story-draft"]
 
   async call<T>(request: AIRequest): Promise<AIResponse<T>> {
@@ -80,7 +80,8 @@ export abstract class BaseAIAdapter implements AIProviderAdapter {
         }
       } catch (err) {
         lastError = err as Error
-        if (this.isRetryable(err) && attempt < this.maxRetries) {
+        const isTimeout = lastError.message?.includes("timed out")
+        if ((isTimeout || this.isRetryable(err)) && attempt < this.maxRetries) {
           await sleep(exponentialBackoff(attempt))
           continue
         }
